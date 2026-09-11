@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: document-intelligence-platform
+    runtime: python
+    plan: free
+
+    buildCommand: apt-get update && apt-get install -y tesseract-ocr && pip install -r backend/requirements.txt
+
+    startCommand: gunicorn --chdir backend --bind 0.0.0.0:$PORT app.main:app
+
+    healthCheckPath: /api/v1/health
