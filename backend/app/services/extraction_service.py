@@ -1,214 +1,79 @@
+import json
 import logging
 import os
 import time
-from typing import List, Optional
 
 from google import genai
 from google.genai import types
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 
 logger = logging.getLogger(__name__)
 
 
 # ============================================================
-# Pydantic structured-output models
+# EXTRACTION SCHEMAS
 # ============================================================
 
 class DocumentMetadata(BaseModel):
-    """
-    General metadata that may appear in any supported document.
-    """
-
-    title: Optional[str] = Field(
-        default=None,
-        description="Document title if explicitly visible.",
-    )
-
-    document_number: Optional[str] = Field(
-        default=None,
-        description=(
-            "Invoice number, statement number, or other "
-            "document identifier."
-        ),
-    )
-
-    document_date: Optional[str] = Field(
-        default=None,
-        description="Document date if explicitly visible.",
-    )
-
-    currency: Optional[str] = Field(
-        default=None,
-        description="Currency explicitly visible in the document.",
-    )
-
-    company: Optional[str] = Field(
-        default=None,
-        description=(
-            "Company or organization name explicitly visible."
-        ),
-    )
-
-    period: Optional[str] = Field(
-        default=None,
-        description=(
-            "Reporting period explicitly visible in the document."
-        ),
-    )
+    document_title: str | None = None
+    document_date: str | None = None
+    period: str | None = None
+    company_name: str | None = None
+    currency: str | None = None
 
 
 class ExtractedField(BaseModel):
-    """
-    A general extracted field with evidence.
-    """
-
-    name: str = Field(
-        description="Name of the extracted field.",
-    )
-
-    value: Optional[str] = Field(
+    field_name: str
+    value: str | None = None
+    source_text: str | None = None
+    page_number: int | None = None
+    confidence: float | None = Field(
         default=None,
-        description=(
-            "Value exactly as represented in the document. "
-            "Use null when the value is missing or unreadable."
-        ),
-    )
-
-    page_number: Optional[int] = Field(
-        default=None,
-        description=(
-            "Page number where the field was found."
-        ),
-    )
-
-    evidence: Optional[str] = Field(
-        default=None,
-        description=(
-            "Exact or near-exact source text supporting "
-            "the extracted value."
-        ),
+        ge=0,
+        le=1,
     )
 
 
 class ExtractedLineItem(BaseModel):
-    """
-    Financial statement or invoice line item.
-    """
-
-    name: str = Field(
-        description="Name of the financial line item.",
-    )
-
-    value: Optional[str] = Field(
+    description: str | None = None
+    quantity: str | None = None
+    unit_price: str | None = None
+    amount: str | None = None
+    source_text: str | None = None
+    page_number: int | None = None
+    confidence: float | None = Field(
         default=None,
-        description=(
-            "Value as shown in the document. "
-            "Keep the original numeric representation as text."
-        ),
-    )
-
-    period: Optional[str] = Field(
-        default=None,
-        description=(
-            "Period associated with this line item, "
-            "if explicitly visible."
-        ),
-    )
-
-    page_number: Optional[int] = Field(
-        default=None,
-        description=(
-            "Page number where the line item was found."
-        ),
-    )
-
-    evidence: Optional[str] = Field(
-        default=None,
-        description=(
-            "Exact or near-exact source text supporting "
-            "the line item."
-        ),
+        ge=0,
+        le=1,
     )
 
 
 class ExtractedTable(BaseModel):
-    """
-    Extracted document table.
-    """
-
-    title: Optional[str] = Field(
+    table_name: str | None = None
+    columns: list[str] = Field(default_factory=list)
+    rows: list[list[str | None]] = Field(default_factory=list)
+    source_text: str | None = None
+    page_number: int | None = None
+    confidence: float | None = Field(
         default=None,
-        description="Table title if explicitly visible.",
-    )
-
-    columns: List[str] = Field(
-        default_factory=list,
-        description="Column names in the table.",
-    )
-
-    rows: List[List[Optional[str]]] = Field(
-        default_factory=list,
-        description=(
-            "Table rows. Preserve values as strings and use "
-            "null when a cell is missing or unreadable."
-        ),
-    )
-
-    page_number: Optional[int] = Field(
-        default=None,
-        description=(
-            "Page number where the table appears."
-        ),
+        ge=0,
+        le=1,
     )
 
 
 class ExtractionResult(BaseModel):
-    """
-    Complete structured extraction result.
-    """
-
-    document_metadata: DocumentMetadata = Field(
-        description="General document metadata.",
-    )
-
-    fields: List[ExtractedField] = Field(
-        default_factory=list,
-        description=(
-            "Meaningful extracted document fields."
-        ),
-    )
-
-    line_items: List[ExtractedLineItem] = Field(
-        default_factory=list,
-        description=(
-            "Financial or invoice line items."
-        ),
-    )
-
-    tables: List[ExtractedTable] = Field(
-        default_factory=list,
-        description=(
-            "Extracted tables and their rows."
-        ),
-    )
+    metadata: DocumentMetadata
+    fields: list[ExtractedField] = Field(default_factory=list)
+    line_items: list[ExtractedLineItem] = Field(default_factory=list)
+    tables: list[ExtractedTable] = Field(default_factory=list)
 
 
 # ============================================================
-# Extraction service
+# EXTRACTION SERVICE
 # ============================================================
 
 class ExtractionService:
-    """
-    Uses Gemini to extract structured financial information
-    from OCR/native document text.
-
-    Supported document types:
-        - invoice
-        - balance_sheet
-        - profit_and_loss
-        - cash_flow_statement
-    """
 
     SUPPORTED_DOCUMENT_TYPES = {
         "invoice",
@@ -217,7 +82,6 @@ class ExtractionService:
         "cash_flow_statement",
     }
 
-    # Retry temporary Gemini availability errors.
     MAX_RETRIES = 3
 
     RETRY_DELAYS = [
@@ -226,72 +90,78 @@ class ExtractionService:
         8,
     ]
 
-    # Gemini HTTP timeout in milliseconds.
-    #
-    # This gives the Gemini request enough time to complete
-    # while remaining below the Gunicorn timeout configured
-    # on the deployed service.
-    GEMINI_TIMEOUT_MS = 150000
+    # IMPORTANT:
+    # Never fall back to the retired Gemini 2.5 Flash model.
+    DEFAULT_MODEL = "gemini-3.5-flash"
 
     def __init__(self):
-        api_key = os.getenv(
-            "GEMINI_API_KEY"
-        )
+        self.api_key = os.getenv("GEMINI_API_KEY")
 
-        self.model = os.getenv(
-            "GEMINI_MODEL",
-            "gemini-2.5-flash",
-        )
-
-        if not api_key:
+        if not self.api_key:
             raise ValueError(
                 "GEMINI_API_KEY is not configured."
             )
 
-        # ----------------------------------------------------
-        # Explicit Gemini HTTP timeout
-        # ----------------------------------------------------
+        # Read the configured model.
         #
-        # The Google GenAI SDK supports HttpOptions(timeout=...)
-        # for controlling request timeout.
-        #
-        # 150000 milliseconds = 150 seconds.
-        #
-        # This prevents the Gemini SDK from using an unsuitable
-        # default timeout for a document extraction request.
-        # ----------------------------------------------------
+        # The default is deliberately Gemini 3.5 Flash so that
+        # the application cannot accidentally use the retired
+        # Gemini 2.5 Flash model.
+        configured_model = os.getenv(
+            "GEMINI_MODEL",
+            self.DEFAULT_MODEL,
+        )
 
-        http_options = types.HttpOptions(
-            timeout=self.GEMINI_TIMEOUT_MS
+        configured_model = configured_model.strip()
+
+        if not configured_model:
+            configured_model = self.DEFAULT_MODEL
+
+        # Remove "models/" if someone placed it in .env.
+        # The SDK accepts the model ID itself.
+        if configured_model.startswith("models/"):
+            configured_model = configured_model.replace(
+                "models/",
+                "",
+                1,
+            )
+
+        # Protect against the exact retired model that caused
+        # the current 500 error.
+        if configured_model == "gemini-2.5-flash":
+            logger.warning(
+                "GEMINI_MODEL was set to retired "
+                "gemini-2.5-flash. Using gemini-3.5-flash instead."
+            )
+
+            configured_model = self.DEFAULT_MODEL
+
+        self.model = configured_model
+
+        logger.info(
+            "Initializing Gemini ExtractionService with model=%s",
+            self.model,
         )
 
         self.client = genai.Client(
-            api_key=api_key,
-            http_options=http_options,
-        )
-
-        logger.info(
-            "Gemini ExtractionService initialized "
-            "(model=%s, timeout_ms=%s)",
-            self.model,
-            self.GEMINI_TIMEOUT_MS,
+            api_key=self.api_key,
         )
 
     # ========================================================
-    # Main extraction method
+    # PUBLIC EXTRACTION METHOD
     # ========================================================
 
     def extract(
         self,
-        document_type: str,
-        pages: list,
+        document_type,
+        pages,
     ):
         """
-        Extract structured information from page-level
-        OCR/native text.
-        """
+        Extract structured information from OCR/native text.
 
-        start_time = time.perf_counter()
+        The source text is preserved page-by-page so that the model
+        can provide page numbers and source evidence.
+        """
 
         if document_type not in self.SUPPORTED_DOCUMENT_TYPES:
             raise ValueError(
@@ -300,20 +170,10 @@ class ExtractionService:
 
         if not pages:
             raise ValueError(
-                "No extracted document text was provided."
+                "No document pages were provided for extraction."
             )
 
-        source_text = self._build_source_text(
-            pages
-        )
-
-        logger.info(
-            "Preparing Gemini extraction "
-            "(document_type=%s, pages=%s, source_chars=%s)",
-            document_type,
-            len(pages),
-            len(source_text),
-        )
+        source_text = self._build_source_text(pages)
 
         prompt = self._build_prompt(
             document_type=document_type,
@@ -321,311 +181,327 @@ class ExtractionService:
         )
 
         logger.info(
-            "Gemini prompt prepared "
-            "(prompt_chars=%s)",
-            len(prompt),
+            "Sending document to Gemini: type=%s model=%s pages=%s",
+            document_type,
+            self.model,
+            len(pages),
         )
 
         response = self._generate_content_with_retry(
-            prompt
+            prompt=prompt,
         )
 
-        elapsed = time.perf_counter() - start_time
+        if response is None:
+            raise RuntimeError(
+                "Gemini returned no response."
+            )
+
+        extracted_data = self._parse_response(
+            response,
+        )
 
         logger.info(
-            "Gemini extraction completed in %.2f seconds.",
-            elapsed,
+            "Gemini structured extraction successful: "
+            "type=%s fields=%s tables=%s line_items=%s",
+            document_type,
+            len(extracted_data.get("fields", [])),
+            len(extracted_data.get("tables", [])),
+            len(extracted_data.get("line_items", [])),
         )
 
-        if not response.text:
-            raise ValueError(
-                "Gemini returned an empty extraction response."
-            )
-
-        try:
-            result = ExtractionResult.model_validate_json(
-                response.text
-            )
-
-        except Exception as exc:
-            logger.exception(
-                "Gemini returned invalid structured extraction."
-            )
-
-            raise ValueError(
-                "AI extraction returned an invalid structured result."
-            ) from exc
-
-        logger.info(
-            "Structured extraction validated successfully "
-            "(fields=%s, line_items=%s, tables=%s).",
-            len(result.fields),
-            len(result.line_items),
-            len(result.tables),
-        )
-
-        return result.model_dump()
+        return extracted_data
 
     # ========================================================
-    # Gemini request with retry handling
+    # BUILD PAGE-PRESERVING SOURCE TEXT
     # ========================================================
 
-    def _generate_content_with_retry(
-        self,
-        prompt: str,
-    ):
-        """
-        Call Gemini with retry handling for temporary
-        service-unavailable errors such as HTTP 503.
-
-        Non-503 errors are raised immediately.
-        """
-
-        last_exception = None
-
-        total_attempts = self.MAX_RETRIES + 1
-
-        for attempt in range(total_attempts):
-
-            attempt_start = time.perf_counter()
-
-            try:
-                logger.info(
-                    "Sending extraction request to Gemini "
-                    "(attempt %s/%s, model=%s)",
-                    attempt + 1,
-                    total_attempts,
-                    self.model,
-                )
-
-                response = (
-                    self.client.models.generate_content(
-                        model=self.model,
-                        contents=prompt,
-                        config={
-                            "temperature": 0,
-                            "response_mime_type": (
-                                "application/json"
-                            ),
-                            "response_schema": ExtractionResult,
-                        },
-                    )
-                )
-
-                attempt_elapsed = (
-                    time.perf_counter()
-                    - attempt_start
-                )
-
-                logger.info(
-                    "Gemini extraction request succeeded "
-                    "in %.2f seconds.",
-                    attempt_elapsed,
-                )
-
-                return response
-
-            except Exception as exc:
-
-                last_exception = exc
-
-                attempt_elapsed = (
-                    time.perf_counter()
-                    - attempt_start
-                )
-
-                status_code = getattr(
-                    exc,
-                    "status_code",
-                    None,
-                )
-
-                # Some Google API exceptions expose HTTP
-                # information through a response object.
-                if status_code is None:
-
-                    response_object = getattr(
-                        exc,
-                        "response",
-                        None,
-                    )
-
-                    status_code = getattr(
-                        response_object,
-                        "status_code",
-                        None,
-                    )
-
-                error_text = str(exc)
-
-                is_503 = (
-                    status_code == 503
-                    or (
-                        "503" in error_text
-                        and
-                        "UNAVAILABLE"
-                        in error_text.upper()
-                    )
-                )
-
-                logger.error(
-                    "Gemini request failed "
-                    "(attempt=%s/%s, elapsed=%.2fs, "
-                    "status_code=%s, is_503=%s, error=%s)",
-                    attempt + 1,
-                    total_attempts,
-                    attempt_elapsed,
-                    status_code,
-                    is_503,
-                    error_text,
-                )
-
-                # ------------------------------------------------
-                # Non-503 errors
-                # ------------------------------------------------
-
-                if not is_503:
-
-                    logger.exception(
-                        "Gemini extraction failed with "
-                        "a non-retryable error."
-                    )
-
-                    raise
-
-                # ------------------------------------------------
-                # Retry exhausted
-                # ------------------------------------------------
-
-                if attempt >= self.MAX_RETRIES:
-
-                    logger.exception(
-                        "Gemini remained unavailable after "
-                        "%s retries.",
-                        self.MAX_RETRIES,
-                    )
-
-                    raise RuntimeError(
-                        "Gemini extraction service is temporarily "
-                        "unavailable after multiple retry attempts. "
-                        "Please try processing the document again."
-                    ) from exc
-
-                # ------------------------------------------------
-                # Retry
-                # ------------------------------------------------
-
-                delay = self.RETRY_DELAYS[
-                    attempt
-                ]
-
-                logger.warning(
-                    "Gemini returned HTTP 503 UNAVAILABLE. "
-                    "Retrying in %s seconds "
-                    "(attempt %s/%s).",
-                    delay,
-                    attempt + 1,
-                    total_attempts,
-                )
-
-                time.sleep(delay)
-
-        # Defensive fallback.
-        raise RuntimeError(
-            "Gemini extraction failed unexpectedly."
-        ) from last_exception
-
-    # ========================================================
-    # Build source text
-    # ========================================================
-
-    @staticmethod
-    def _build_source_text(
-        pages,
-    ):
-        """
-        Preserve page boundaries so evidence can reference
-        the correct page.
-        """
-
-        page_sections = []
+    def _build_source_text(self, pages):
+        page_blocks = []
 
         for page in pages:
-
             page_number = page.get(
-                "page_number"
+                "page_number",
+                len(page_blocks) + 1,
             )
 
             text = page.get(
                 "text",
                 "",
-            ).strip()
-
-            page_sections.append(
-                f"--- PAGE {page_number} ---\n{text}"
             )
 
-        return "\n\n".join(
-            page_sections
-        )
+            if text is None:
+                text = ""
+
+            text = str(text).strip()
+
+            page_blocks.append(
+                f"--- PAGE {page_number} ---\n"
+                f"{text}"
+            )
+
+        return "\n\n".join(page_blocks)
 
     # ========================================================
-    # Prompt
+    # PROMPT
     # ========================================================
 
-    @staticmethod
     def _build_prompt(
-        document_type: str,
-        source_text: str,
+        self,
+        document_type,
+        source_text,
     ):
-        """
-        Build the extraction prompt.
-        """
-
         return f"""
-You are a financial document extraction system.
+You are a document intelligence extraction system.
 
-DOCUMENT TYPE:
+The document type is:
 {document_type}
 
-SOURCE DOCUMENT TEXT:
-{source_text}
-
-TASK:
-
-Extract ALL meaningful information explicitly visible in the
-document.
+Extract ALL meaningful information that is visibly present
+in the supplied document text.
 
 IMPORTANT RULES:
 
 1. Extract only information explicitly present in the source.
-2. Never invent, estimate, guess, or infer a value.
-3. If a required or visible value is missing or unreadable,
-   return null.
-4. Preserve the original meaning of the document.
-5. Extract headers and document metadata.
-6. Extract dates.
-7. Extract document numbers or identifiers.
-8. Extract company names and parties.
-9. Extract currencies when explicitly visible.
-10. Extract totals and subtotals.
-11. Extract financial statement line items.
-12. Extract comparative-period values when visible.
+2. Do NOT invent values.
+3. Do NOT infer missing values.
+4. If a field is not present, use null.
+5. Preserve the original meaning of the document.
+6. Extract headers and document metadata.
+7. Extract dates.
+8. Extract company/party names.
+9. Extract currency information.
+10. Extract totals.
+11. Extract all meaningful financial statement line items.
+12. Extract comparative periods/years when present.
 13. Extract invoice or financial statement tables.
-14. Extract every meaningful table row and value.
-15. Do not silently omit meaningful visible information.
-16. Preserve page numbers.
-17. Provide evidence/source text for extracted information
-    whenever possible.
-18. Evidence must come from the supplied source text.
-19. Do not use outside knowledge.
-20. Do not calculate financial values.
-21. Do not perform accounting validation.
-22. Financial validation will be performed separately by the
-    application.
-23. Numeric values should be returned as strings so that their
-    original document representation is preserved.
-24. If a value cannot be reliably read, use null.
+14. Extract every meaningful visible table row and value.
+15. Preserve negative values.
+16. Preserve zero values.
+17. Preserve the source wording where practical.
+18. Provide source_text/evidence for extracted values when possible.
+19. Provide the page_number whenever it can be determined.
+20. Confidence may be provided when appropriate.
+21. Do NOT perform financial calculations.
+22. Do NOT modify or correct numbers from the document.
+23. Do NOT assume a value merely because a financial statement
+    normally contains such a value.
+24. Missing or unreadable information must remain null.
 
-The output must follow the provided structured schema.
+For numeric values, return them as strings so that the original
+document value can be preserved accurately.
+
+Document type-specific guidance:
+
+INVOICE:
+- invoice number
+- invoice date
+- due date
+- seller/bill-from
+- buyer/bill-to
+- currency
+- subtotal
+- tax
+- shipping/handling
+- total
+- all invoice line items
+- product/service descriptions
+- quantities
+- unit prices
+- amounts
+- invoice tables
+
+BALANCE SHEET:
+- reporting date
+- company
+- currency
+- all asset line items
+- all liability line items
+- capital/equity line items
+- total assets
+- total liabilities/capital
+- comparative periods
+- all visible tables
+
+PROFIT AND LOSS:
+- reporting period
+- company
+- currency
+- income items
+- interest earned
+- other income
+- total income
+- expenditure items
+- interest expended
+- operating expenses
+- provisions
+- total expenditure
+- profit before minority interest
+- minority interest
+- attributable group profit
+- comparative periods
+- all visible tables
+
+CASH FLOW STATEMENT:
+- reporting period
+- company
+- currency
+- operating cash flow
+- investing cash flow
+- financing cash flow
+- foreign exchange effect
+- net increase/decrease in cash
+- opening cash
+- closing cash
+- comparative periods
+- all visible tables
+
+Return ONLY valid JSON matching the required structured schema.
+
+SOURCE DOCUMENT TEXT:
+
+{source_text}
 """
+
+    # ========================================================
+    # GEMINI REQUEST WITH RETRIES
+    # ========================================================
+
+    def _generate_content_with_retry(
+        self,
+        prompt,
+    ):
+        last_exception = None
+
+        for attempt in range(
+            self.MAX_RETRIES
+        ):
+            try:
+                logger.info(
+                    "Gemini request attempt %s/%s using model=%s",
+                    attempt + 1,
+                    self.MAX_RETRIES,
+                    self.model,
+                )
+
+                response = self.client.models.generate_content(
+                    model=self.model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        response_schema=ExtractionResult,
+                    ),
+                )
+
+                return response
+
+            except Exception as exc:
+                last_exception = exc
+
+                error_text = str(exc)
+
+                logger.exception(
+                    "Gemini request failed on attempt %s/%s: %s",
+                    attempt + 1,
+                    self.MAX_RETRIES,
+                    error_text,
+                )
+
+                # A model-not-found / invalid-model error should
+                # NOT be retried because retrying the same retired
+                # model will never fix the problem.
+                if (
+                    "404" in error_text
+                    or "NOT_FOUND" in error_text
+                    or "not found" in error_text.lower()
+                    or "no longer available" in error_text.lower()
+                ):
+                    raise RuntimeError(
+                        f"Gemini model '{self.model}' is unavailable. "
+                        f"Please use a supported model. "
+                        f"Original error: {error_text}"
+                    ) from exc
+
+                # Retry transient service errors.
+                is_transient = any(
+                    code in error_text
+                    for code in [
+                        "503",
+                        "UNAVAILABLE",
+                        "429",
+                        "RESOURCE_EXHAUSTED",
+                        "500",
+                        "INTERNAL",
+                    ]
+                )
+
+                if not is_transient:
+                    raise RuntimeError(
+                        f"Gemini extraction failed: {error_text}"
+                    ) from exc
+
+                if attempt < self.MAX_RETRIES - 1:
+                    delay = self.RETRY_DELAYS[
+                        min(
+                            attempt,
+                            len(self.RETRY_DELAYS) - 1,
+                        )
+                    ]
+
+                    logger.warning(
+                        "Transient Gemini error. "
+                        "Retrying in %s seconds.",
+                        delay,
+                    )
+
+                    time.sleep(delay)
+
+        raise RuntimeError(
+            "Gemini extraction failed after "
+            f"{self.MAX_RETRIES} attempts: "
+            f"{last_exception}"
+        ) from last_exception
+
+    # ========================================================
+    # RESPONSE PARSING
+    # ========================================================
+
+    def _parse_response(
+        self,
+        response,
+    ):
+        response_text = getattr(
+            response,
+            "text",
+            None,
+        )
+
+        if not response_text:
+            raise RuntimeError(
+                "Gemini response did not contain text."
+            )
+
+        response_text = response_text.strip()
+
+        try:
+            parsed = json.loads(
+                response_text
+            )
+
+            validated = ExtractionResult.model_validate(
+                parsed
+            )
+
+            return validated.model_dump()
+
+        except (
+            json.JSONDecodeError,
+            ValidationError,
+        ) as exc:
+            logger.exception(
+                "Failed to parse Gemini structured response."
+            )
+
+            raise RuntimeError(
+                "Gemini returned an invalid structured response: "
+                f"{exc}"
+            ) from exc

@@ -1,5 +1,4 @@
 import logging
-from typing import Any, Dict, List, Optional
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -11,173 +10,209 @@ logger = logging.getLogger(__name__)
 
 
 class DocumentRepository:
-    """Database operations for processed documents."""
+    """
+    Repository responsible for creating and retrieving
+    processed document records.
+    """
+
+    # =========================================================
+    # CREATE DOCUMENT
+    # =========================================================
 
     def create(
         self,
-        document_name: str,
-        document_type: str,
-        processing_status: str,
-        file_validation: Optional[Dict[str, Any]] = None,
-        extracted_data: Optional[Dict[str, Any]] = None,
-        validation_result: Optional[Dict[str, Any]] = None,
-        processing_metadata: Optional[Dict[str, Any]] = None,
-    ) -> Document:
+        document_name,
+        document_type,
+        processing_status,
+        file_type=None,
+        page_count=None,
+        extracted_data=None,
+        validation_result=None,
+        processing_metadata=None,
+    ):
         """
         Create and persist a processed document.
 
-        The complete processing result is stored, including:
-        - file validation
-        - extracted structured data
-        - financial validation
-        - processing metadata
+        Parameters:
+            document_name:
+                Original uploaded filename.
+
+            document_type:
+                One of the supported financial document types.
+
+            processing_status:
+                PASS, FAILED, or NOT_APPLICABLE.
+
+            file_type:
+                Validated MIME/file type.
+
+            page_count:
+                Number of pages in the document.
+
+            extracted_data:
+                Structured AI extraction result.
+
+            validation_result:
+                Financial validation result.
+
+            processing_metadata:
+                OCR/model/processing metadata.
         """
 
-        document = Document(
-            document_name=document_name,
-            document_type=document_type,
-            processing_status=processing_status,
-            file_type=(
-                file_validation.get("file_type")
-                if file_validation
-                else None
-            ),
-            page_count=(
-                file_validation.get("page_count")
-                if file_validation
-                else None
-            ),
-            extracted_data=extracted_data,
-            validation_result=validation_result,
-            processing_metadata=processing_metadata,
-        )
-
         try:
-            # Add the document to the current transaction.
-            db.session.add(document)
-
-            # Flush first so SQLAlchemy sends the INSERT to the
-            # database and assigns the document ID.
-            db.session.flush()
-
-            logger.info(
-                "Document inserted into database session: "
-                "name=%s id=%s status=%s",
-                document_name,
-                document.id,
-                processing_status,
+            document = Document(
+                document_name=document_name,
+                document_type=document_type,
+                processing_status=processing_status,
+                file_type=file_type,
+                page_count=page_count,
+                extracted_data=extracted_data,
+                validation_result=validation_result,
+                processing_metadata=processing_metadata,
             )
 
-            # Permanently save the transaction.
+            db.session.add(document)
             db.session.commit()
-
-            # Refresh the object from the database so we know that
-            # the persisted record is available.
             db.session.refresh(document)
 
             logger.info(
-                "Document persisted successfully: "
-                "name=%s id=%s status=%s",
-                document.document_name,
+                "Document created successfully: "
+                "id=%s name=%s type=%s status=%s",
                 document.id,
+                document.document_name,
+                document.document_type,
                 document.processing_status,
             )
 
             return document
 
         except SQLAlchemyError:
-            # Roll back the transaction if anything goes wrong.
             db.session.rollback()
 
             logger.exception(
-                "Database error while saving document: %s",
+                "Database error while creating document: %s",
                 document_name,
             )
 
             raise
 
         except Exception:
-            # Roll back unexpected errors as well.
             db.session.rollback()
 
             logger.exception(
-                "Unexpected error while saving document: %s",
+                "Unexpected error while creating document: %s",
                 document_name,
             )
 
             raise
 
+    # =========================================================
+    # GET LATEST DOCUMENT BY NAME
+    # =========================================================
+
     def get_latest_by_name(
         self,
-        document_name: str,
-    ) -> Optional[Document]:
+        document_name,
+    ):
         """
-        Return the latest processing result for a document name.
+        Return the latest processed document with the
+        specified filename.
         """
 
-        document = (
-            Document.query
-            .filter_by(document_name=document_name)
-            .order_by(Document.created_at.desc())
-            .first()
-        )
-
-        if document:
-            logger.info(
-                "Retrieved latest document: name=%s id=%s status=%s",
-                document.document_name,
-                document.id,
-                document.processing_status,
+        try:
+            return (
+                Document.query
+                .filter(
+                    Document.document_name == document_name
+                )
+                .order_by(
+                    Document.created_at.desc(),
+                    Document.id.desc(),
+                )
+                .first()
             )
-        else:
-            logger.info(
-                "No document found with name=%s",
+
+        except SQLAlchemyError:
+            logger.exception(
+                "Database error while retrieving latest "
+                "document: %s",
                 document_name,
             )
 
-        return document
+            raise
 
-    def get_all(self) -> List[Document]:
+        except Exception:
+            logger.exception(
+                "Unexpected error while retrieving latest "
+                "document: %s",
+                document_name,
+            )
+
+            raise
+
+    # =========================================================
+    # GET ALL DOCUMENTS
+    # =========================================================
+
+    def get_all(self):
         """
         Return all processed documents, newest first.
         """
 
-        documents = (
-            Document.query
-            .order_by(Document.created_at.desc())
-            .all()
-        )
+        try:
+            return (
+                Document.query
+                .order_by(
+                    Document.created_at.desc(),
+                    Document.id.desc(),
+                )
+                .all()
+            )
 
-        logger.info(
-            "Retrieved %s processed documents from database.",
-            len(documents),
-        )
+        except SQLAlchemyError:
+            logger.exception(
+                "Database error while retrieving documents."
+            )
 
-        return documents
+            raise
+
+        except Exception:
+            logger.exception(
+                "Unexpected error while retrieving documents."
+            )
+
+            raise
+
+    # =========================================================
+    # GET DOCUMENT BY ID
+    # =========================================================
 
     def get_by_id(
         self,
-        document_id: int,
-    ) -> Optional[Document]:
+        document_id,
+    ):
         """
-        Return a document by database ID.
+        Return a document by its database ID.
         """
 
-        document = db.session.get(
-            Document,
-            document_id,
-        )
-
-        if document:
-            logger.info(
-                "Retrieved document by ID: id=%s name=%s",
-                document.id,
-                document.document_name,
-            )
-        else:
-            logger.info(
-                "No document found with ID=%s",
+        try:
+            return db.session.get(
+                Document,
                 document_id,
             )
 
-        return document
+        except SQLAlchemyError:
+            logger.exception(
+                "Database error while retrieving document id=%s",
+                document_id,
+            )
+
+            raise
+
+        except Exception:
+            logger.exception(
+                "Unexpected error while retrieving document id=%s",
+                document_id,
+            )
+
+            raise
