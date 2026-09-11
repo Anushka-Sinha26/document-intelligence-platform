@@ -1,11 +1,17 @@
 services:
   - type: web
     name: document-intelligence-platform
-    runtime: python
+    runtime: docker
     plan: free
-
-    buildCommand: apt-get update && apt-get install -y tesseract-ocr && pip install -r backend/requirements.txt
-
-    startCommand: gunicorn --chdir backend --bind 0.0.0.0:$PORT app.main:app
-
+    dockerfilePath: ./Dockerfile
     healthCheckPath: /api/v1/health
+
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///document_intelligence.db
