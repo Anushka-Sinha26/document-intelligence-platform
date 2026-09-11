@@ -1260,44 +1260,23 @@ The Swagger interface can be used to test the API endpoints, including multipart
 \---
 
 
-
-\# 14. Response Structure
-
-
+# 14. Response Structure
 
 A successful processing response contains information such as:
 
-
-
 ```json
-
 {
-
-&#x20; "document\_name": "invoice.pdf",
-
-&#x20; "document\_type": "invoice",
-
-&#x20; "processing\_status": "PASS",
-
-&#x20; "file\_validation": {},
-
-&#x20; "extracted\_data": {},
-
-&#x20; "validation": {},
-
-&#x20; "processing\_metadata": {}
-
+  "document_name": "invoice.pdf",
+  "document_type": "invoice",
+  "processing_status": "PASS",
+  "file_validation": {},
+  "extracted_data": {},
+  "validation": {},
+  "processing_metadata": {}
 }
-
 ```
 
-
-
 The exact extracted data depends on the contents of the uploaded document.
-
-
-
-\---
 
 
 
