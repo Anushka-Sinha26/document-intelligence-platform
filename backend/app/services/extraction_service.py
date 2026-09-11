@@ -1,9 +1,10 @@
-import json
 import logging
 import os
+import time
 from typing import List, Optional
 
 from google import genai
+from google.genai import types
 from pydantic import BaseModel, Field
 
 
@@ -26,7 +27,10 @@ class DocumentMetadata(BaseModel):
 
     document_number: Optional[str] = Field(
         default=None,
-        description="Invoice number, statement number, or other document identifier.",
+        description=(
+            "Invoice number, statement number, or other "
+            "document identifier."
+        ),
     )
 
     document_date: Optional[str] = Field(
@@ -41,12 +45,16 @@ class DocumentMetadata(BaseModel):
 
     company: Optional[str] = Field(
         default=None,
-        description="Company or organization name explicitly visible.",
+        description=(
+            "Company or organization name explicitly visible."
+        ),
     )
 
     period: Optional[str] = Field(
         default=None,
-        description="Reporting period explicitly visible in the document.",
+        description=(
+            "Reporting period explicitly visible in the document."
+        ),
     )
 
 
@@ -69,13 +77,16 @@ class ExtractedField(BaseModel):
 
     page_number: Optional[int] = Field(
         default=None,
-        description="Page number where the field was found.",
+        description=(
+            "Page number where the field was found."
+        ),
     )
 
     evidence: Optional[str] = Field(
         default=None,
         description=(
-            "Exact or near-exact source text supporting the extracted value."
+            "Exact or near-exact source text supporting "
+            "the extracted value."
         ),
     )
 
@@ -107,13 +118,16 @@ class ExtractedLineItem(BaseModel):
 
     page_number: Optional[int] = Field(
         default=None,
-        description="Page number where the line item was found.",
+        description=(
+            "Page number where the line item was found."
+        ),
     )
 
     evidence: Optional[str] = Field(
         default=None,
         description=(
-            "Exact or near-exact source text supporting the line item."
+            "Exact or near-exact source text supporting "
+            "the line item."
         ),
     )
 
@@ -136,14 +150,16 @@ class ExtractedTable(BaseModel):
     rows: List[List[Optional[str]]] = Field(
         default_factory=list,
         description=(
-            "Table rows. Preserve values as strings and use null "
-            "when a cell is missing or unreadable."
+            "Table rows. Preserve values as strings and use "
+            "null when a cell is missing or unreadable."
         ),
     )
 
     page_number: Optional[int] = Field(
         default=None,
-        description="Page number where the table appears.",
+        description=(
+            "Page number where the table appears."
+        ),
     )
 
 
@@ -158,17 +174,23 @@ class ExtractionResult(BaseModel):
 
     fields: List[ExtractedField] = Field(
         default_factory=list,
-        description="Meaningful extracted document fields.",
+        description=(
+            "Meaningful extracted document fields."
+        ),
     )
 
     line_items: List[ExtractedLineItem] = Field(
         default_factory=list,
-        description="Financial or invoice line items.",
+        description=(
+            "Financial or invoice line items."
+        ),
     )
 
     tables: List[ExtractedTable] = Field(
         default_factory=list,
-        description="Extracted tables and their rows.",
+        description=(
+            "Extracted tables and their rows."
+        ),
     )
 
 
@@ -195,8 +217,26 @@ class ExtractionService:
         "cash_flow_statement",
     }
 
+    # Retry temporary Gemini availability errors.
+    MAX_RETRIES = 3
+
+    RETRY_DELAYS = [
+        2,
+        4,
+        8,
+    ]
+
+    # Gemini HTTP timeout in milliseconds.
+    #
+    # This gives the Gemini request enough time to complete
+    # while remaining below the Gunicorn timeout configured
+    # on the deployed service.
+    GEMINI_TIMEOUT_MS = 150000
+
     def __init__(self):
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = os.getenv(
+            "GEMINI_API_KEY"
+        )
 
         self.model = os.getenv(
             "GEMINI_MODEL",
@@ -208,8 +248,33 @@ class ExtractionService:
                 "GEMINI_API_KEY is not configured."
             )
 
+        # ----------------------------------------------------
+        # Explicit Gemini HTTP timeout
+        # ----------------------------------------------------
+        #
+        # The Google GenAI SDK supports HttpOptions(timeout=...)
+        # for controlling request timeout.
+        #
+        # 150000 milliseconds = 150 seconds.
+        #
+        # This prevents the Gemini SDK from using an unsuitable
+        # default timeout for a document extraction request.
+        # ----------------------------------------------------
+
+        http_options = types.HttpOptions(
+            timeout=self.GEMINI_TIMEOUT_MS
+        )
+
         self.client = genai.Client(
-            api_key=api_key
+            api_key=api_key,
+            http_options=http_options,
+        )
+
+        logger.info(
+            "Gemini ExtractionService initialized "
+            "(model=%s, timeout_ms=%s)",
+            self.model,
+            self.GEMINI_TIMEOUT_MS,
         )
 
     # ========================================================
@@ -226,6 +291,8 @@ class ExtractionService:
         OCR/native text.
         """
 
+        start_time = time.perf_counter()
+
         if document_type not in self.SUPPORTED_DOCUMENT_TYPES:
             raise ValueError(
                 f"Unsupported document type: {document_type}"
@@ -240,19 +307,34 @@ class ExtractionService:
             pages
         )
 
+        logger.info(
+            "Preparing Gemini extraction "
+            "(document_type=%s, pages=%s, source_chars=%s)",
+            document_type,
+            len(pages),
+            len(source_text),
+        )
+
         prompt = self._build_prompt(
             document_type=document_type,
             source_text=source_text,
         )
 
-        response = self.client.models.generate_content(
-            model=self.model,
-            contents=prompt,
-            config={
-                "temperature": 0,
-                "response_mime_type": "application/json",
-                "response_schema": ExtractionResult,
-            },
+        logger.info(
+            "Gemini prompt prepared "
+            "(prompt_chars=%s)",
+            len(prompt),
+        )
+
+        response = self._generate_content_with_retry(
+            prompt
+        )
+
+        elapsed = time.perf_counter() - start_time
+
+        logger.info(
+            "Gemini extraction completed in %.2f seconds.",
+            elapsed,
         )
 
         if not response.text:
@@ -274,14 +356,193 @@ class ExtractionService:
                 "AI extraction returned an invalid structured result."
             ) from exc
 
+        logger.info(
+            "Structured extraction validated successfully "
+            "(fields=%s, line_items=%s, tables=%s).",
+            len(result.fields),
+            len(result.line_items),
+            len(result.tables),
+        )
+
         return result.model_dump()
+
+    # ========================================================
+    # Gemini request with retry handling
+    # ========================================================
+
+    def _generate_content_with_retry(
+        self,
+        prompt: str,
+    ):
+        """
+        Call Gemini with retry handling for temporary
+        service-unavailable errors such as HTTP 503.
+
+        Non-503 errors are raised immediately.
+        """
+
+        last_exception = None
+
+        total_attempts = self.MAX_RETRIES + 1
+
+        for attempt in range(total_attempts):
+
+            attempt_start = time.perf_counter()
+
+            try:
+                logger.info(
+                    "Sending extraction request to Gemini "
+                    "(attempt %s/%s, model=%s)",
+                    attempt + 1,
+                    total_attempts,
+                    self.model,
+                )
+
+                response = (
+                    self.client.models.generate_content(
+                        model=self.model,
+                        contents=prompt,
+                        config={
+                            "temperature": 0,
+                            "response_mime_type": (
+                                "application/json"
+                            ),
+                            "response_schema": ExtractionResult,
+                        },
+                    )
+                )
+
+                attempt_elapsed = (
+                    time.perf_counter()
+                    - attempt_start
+                )
+
+                logger.info(
+                    "Gemini extraction request succeeded "
+                    "in %.2f seconds.",
+                    attempt_elapsed,
+                )
+
+                return response
+
+            except Exception as exc:
+
+                last_exception = exc
+
+                attempt_elapsed = (
+                    time.perf_counter()
+                    - attempt_start
+                )
+
+                status_code = getattr(
+                    exc,
+                    "status_code",
+                    None,
+                )
+
+                # Some Google API exceptions expose HTTP
+                # information through a response object.
+                if status_code is None:
+
+                    response_object = getattr(
+                        exc,
+                        "response",
+                        None,
+                    )
+
+                    status_code = getattr(
+                        response_object,
+                        "status_code",
+                        None,
+                    )
+
+                error_text = str(exc)
+
+                is_503 = (
+                    status_code == 503
+                    or (
+                        "503" in error_text
+                        and
+                        "UNAVAILABLE"
+                        in error_text.upper()
+                    )
+                )
+
+                logger.error(
+                    "Gemini request failed "
+                    "(attempt=%s/%s, elapsed=%.2fs, "
+                    "status_code=%s, is_503=%s, error=%s)",
+                    attempt + 1,
+                    total_attempts,
+                    attempt_elapsed,
+                    status_code,
+                    is_503,
+                    error_text,
+                )
+
+                # ------------------------------------------------
+                # Non-503 errors
+                # ------------------------------------------------
+
+                if not is_503:
+
+                    logger.exception(
+                        "Gemini extraction failed with "
+                        "a non-retryable error."
+                    )
+
+                    raise
+
+                # ------------------------------------------------
+                # Retry exhausted
+                # ------------------------------------------------
+
+                if attempt >= self.MAX_RETRIES:
+
+                    logger.exception(
+                        "Gemini remained unavailable after "
+                        "%s retries.",
+                        self.MAX_RETRIES,
+                    )
+
+                    raise RuntimeError(
+                        "Gemini extraction service is temporarily "
+                        "unavailable after multiple retry attempts. "
+                        "Please try processing the document again."
+                    ) from exc
+
+                # ------------------------------------------------
+                # Retry
+                # ------------------------------------------------
+
+                delay = self.RETRY_DELAYS[
+                    attempt
+                ]
+
+                logger.warning(
+                    "Gemini returned HTTP 503 UNAVAILABLE. "
+                    "Retrying in %s seconds "
+                    "(attempt %s/%s).",
+                    delay,
+                    attempt + 1,
+                    total_attempts,
+                )
+
+                time.sleep(delay)
+
+        # Defensive fallback.
+        raise RuntimeError(
+            "Gemini extraction failed unexpectedly."
+        ) from last_exception
 
     # ========================================================
     # Build source text
     # ========================================================
 
     @staticmethod
-    def _build_source_text(pages):
+    def _build_source_text(
+        pages,
+    ):
         """
         Preserve page boundaries so evidence can reference
         the correct page.
@@ -290,6 +551,7 @@ class ExtractionService:
         page_sections = []
 
         for page in pages:
+
             page_number = page.get(
                 "page_number"
             )

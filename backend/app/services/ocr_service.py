@@ -1,3 +1,4 @@
+import gc
 import os
 from pathlib import Path
 
@@ -8,19 +9,14 @@ from PIL import Image
 
 class OCRService:
     """
-    Extracts text from financial documents.
+    Extract text from supported financial documents.
 
-    Processing strategy:
-        - Native PDF text is extracted directly.
-        - Scanned PDF pages are rendered at a memory-efficient
-          resolution and sent to Tesseract OCR.
-        - JPG/JPEG/PNG files are processed using Tesseract OCR.
-
-    Page numbers are preserved so that later extraction can
-    provide evidence and page references.
-
-    The OCR pipeline is deliberately memory-conscious because
-    the deployed service may run on a resource-limited instance.
+    Strategy:
+        - Native PDF text is preferred.
+        - Pages without meaningful native text are OCR processed.
+        - JPG/JPEG/PNG files are OCR processed.
+        - OCR images are kept small to reduce memory usage.
+        - Only one rendered page/image is processed at a time.
     """
 
     SUPPORTED_IMAGE_EXTENSIONS = {
@@ -29,45 +25,52 @@ class OCRService:
         ".png",
     }
 
-    # Keep OCR images within a reasonable memory footprint.
-    OCR_RENDER_SCALE = 1.5
-    MAX_IMAGE_DIMENSION = 2500
+    # Lower rendering scale keeps Render memory usage low.
+    OCR_RENDER_SCALE = 1.25
+
+    # Free Render instances have limited memory.
+    MAX_IMAGE_DIMENSION = 2000
 
     def __init__(self):
         self._configure_tesseract()
 
-    # ---------------------------------------------------------
+    # =========================================================
     # Tesseract configuration
-    # ---------------------------------------------------------
+    # =========================================================
 
     def _configure_tesseract(self):
         """
-        Configure the Tesseract executable.
+        Configure Tesseract.
 
         Priority:
-            1. TESSERACT_CMD from environment
-            2. Standard Windows installation path
-            3. Tesseract available through system PATH
+            1. TESSERACT_CMD environment variable
+            2. Standard Windows installation
+            3. System PATH
         """
 
         configured_path = os.getenv("TESSERACT_CMD")
 
-        if configured_path and Path(configured_path).exists():
-            pytesseract.pytesseract.tesseract_cmd = configured_path
-            return
+        if configured_path:
+            configured = Path(configured_path)
+
+            if configured.exists():
+                pytesseract.pytesseract.tesseract_cmd = str(
+                    configured
+                )
+                return
 
         windows_default = Path(
             r"C:\Program Files\Tesseract-OCR\tesseract.exe"
         )
 
         if windows_default.exists():
-            pytesseract.pytesseract.tesseract_cmd = (
-                str(windows_default)
+            pytesseract.pytesseract.tesseract_cmd = str(
+                windows_default
             )
 
-    # ---------------------------------------------------------
-    # Main extraction method
-    # ---------------------------------------------------------
+    # =========================================================
+    # Main extraction
+    # =========================================================
 
     def extract_text(
         self,
@@ -75,14 +78,7 @@ class OCRService:
         file_type: str | None = None,
     ):
         """
-        Extract text from a supported document.
-
-        Returns:
-            {
-                "full_text": "...",
-                "pages": [...],
-                "ocr_used": True/False
-            }
+        Extract text from PDF/JPG/JPEG/PNG.
         """
 
         path = Path(file_path)
@@ -104,18 +100,16 @@ class OCRService:
             f"Unsupported document format for OCR: {extension}"
         )
 
-    # ---------------------------------------------------------
-    # PDF extraction
-    # ---------------------------------------------------------
+    # =========================================================
+    # PDF
+    # =========================================================
 
     def _extract_from_pdf(self, path: Path):
         """
-        Extract native PDF text first.
+        Extract native PDF text whenever possible.
 
-        If a page does not contain meaningful native text,
-        render that page as an image and use Tesseract OCR.
-
-        Only one OCR image is kept in memory at a time.
+        OCR is used only when a page does not contain
+        meaningful native text.
         """
 
         pages = []
@@ -127,13 +121,16 @@ class OCRService:
             for page_index in range(len(pdf)):
                 page = pdf[page_index]
 
-                native_text = page.get_text("text").strip()
+                native_text = page.get_text(
+                    "text"
+                ).strip()
 
-                # ---------------------------------------------
-                # Native PDF text available
-                # ---------------------------------------------
+                # -------------------------------------------------
+                # Prefer native PDF text.
+                # -------------------------------------------------
 
                 if self._has_meaningful_text(native_text):
+
                     pages.append(
                         {
                             "page_number": page_index + 1,
@@ -144,28 +141,41 @@ class OCRService:
 
                     continue
 
-                # ---------------------------------------------
-                # Scanned PDF page -> OCR
-                # ---------------------------------------------
+                # -------------------------------------------------
+                # OCR scanned page.
+                # -------------------------------------------------
 
-                pixmap = page.get_pixmap(
-                    matrix=pymupdf.Matrix(
-                        self.OCR_RENDER_SCALE,
-                        self.OCR_RENDER_SCALE,
-                    ),
-                    alpha=False,
-                )
+                pixmap = None
+                image = None
+                prepared_image = None
 
                 try:
+
+                    pixmap = page.get_pixmap(
+                        matrix=pymupdf.Matrix(
+                            self.OCR_RENDER_SCALE,
+                            self.OCR_RENDER_SCALE,
+                        ),
+                        alpha=False,
+                        colorspace=pymupdf.csRGB,
+                    )
+
                     image = Image.frombytes(
                         "RGB",
-                        [pixmap.width, pixmap.height],
+                        (
+                            pixmap.width,
+                            pixmap.height,
+                        ),
                         pixmap.samples,
                     )
 
-                    image = self._prepare_image_for_ocr(image)
+                    prepared_image = self._prepare_image_for_ocr(
+                        image
+                    )
 
-                    ocr_text = self._run_tesseract(image)
+                    ocr_text = self._run_tesseract(
+                        prepared_image
+                    )
 
                     pages.append(
                         {
@@ -177,18 +187,32 @@ class OCRService:
 
                     document_ocr_used = True
 
-                    # Explicitly release the image before processing
-                    # the next page.
-                    image.close()
-                    del image
-
                 finally:
-                    del pixmap
+
+                    if prepared_image is not None:
+                        try:
+                            prepared_image.close()
+                        except Exception:
+                            pass
+
+                    if image is not None:
+                        try:
+                            image.close()
+                        except Exception:
+                            pass
+
+                    if pixmap is not None:
+                        del pixmap
+
+                    gc.collect()
 
         finally:
             pdf.close()
+            gc.collect()
 
-        full_text = self._combine_page_text(pages)
+        full_text = self._combine_page_text(
+            pages
+        )
 
         return {
             "full_text": full_text,
@@ -196,27 +220,49 @@ class OCRService:
             "ocr_used": document_ocr_used,
         }
 
-    # ---------------------------------------------------------
-    # Image extraction
-    # ---------------------------------------------------------
+    # =========================================================
+    # Image
+    # =========================================================
 
     def _extract_from_image(self, path: Path):
         """
-        Extract text from JPG/JPEG/PNG using Tesseract OCR.
-
-        Large uploaded images are resized before OCR to avoid
-        excessive memory consumption while retaining enough
-        resolution for document text.
+        OCR a JPG/JPEG/PNG document.
         """
 
-        with Image.open(path) as image:
-            image = image.convert("RGB")
+        image = None
+        prepared_image = None
 
-            image = self._prepare_image_for_ocr(image)
+        try:
 
-            text = self._run_tesseract(image)
+            image = Image.open(path)
 
-            image.close()
+            image = image.convert(
+                "RGB"
+            )
+
+            prepared_image = self._prepare_image_for_ocr(
+                image
+            )
+
+            text = self._run_tesseract(
+                prepared_image
+            )
+
+        finally:
+
+            if prepared_image is not None:
+                try:
+                    prepared_image.close()
+                except Exception:
+                    pass
+
+            if image is not None:
+                try:
+                    image.close()
+                except Exception:
+                    pass
+
+            gc.collect()
 
         pages = [
             {
@@ -232,32 +278,49 @@ class OCRService:
             "ocr_used": True,
         }
 
-    # ---------------------------------------------------------
-    # OCR image preparation
-    # ---------------------------------------------------------
+    # =========================================================
+    # Image preparation
+    # =========================================================
 
     @classmethod
-    def _prepare_image_for_ocr(cls, image: Image.Image):
+    def _prepare_image_for_ocr(
+        cls,
+        image: Image.Image,
+    ):
         """
-        Reduce very large OCR images to a bounded maximum
-        dimension.
+        Resize large images before OCR.
 
-        This prevents large uploaded images and rendered PDF
-        pages from consuming excessive memory.
+        This is important on Render Free because the instance
+        has limited memory.
         """
 
         width, height = image.size
 
-        largest_dimension = max(width, height)
+        largest_dimension = max(
+            width,
+            height,
+        )
 
-        if largest_dimension <= cls.MAX_IMAGE_DIMENSION:
+        if (
+            largest_dimension
+            <= cls.MAX_IMAGE_DIMENSION
+        ):
             return image
 
-        scale = cls.MAX_IMAGE_DIMENSION / largest_dimension
+        scale = (
+            cls.MAX_IMAGE_DIMENSION
+            / largest_dimension
+        )
 
         new_size = (
-            max(1, int(width * scale)),
-            max(1, int(height * scale)),
+            max(
+                1,
+                int(width * scale),
+            ),
+            max(
+                1,
+                int(height * scale),
+            ),
         )
 
         resized_image = image.resize(
@@ -265,38 +328,42 @@ class OCRService:
             Image.Resampling.LANCZOS,
         )
 
-        image.close()
-
         return resized_image
 
-    # ---------------------------------------------------------
+    # =========================================================
     # Tesseract
-    # ---------------------------------------------------------
+    # =========================================================
 
     @staticmethod
-    def _run_tesseract(image: Image.Image):
+    def _run_tesseract(
+        image: Image.Image,
+    ):
         """
-        Run Tesseract OCR using English language data.
+        Run Tesseract OCR.
+
+        --psm 6 works well for structured document pages
+        containing tables and financial text.
         """
 
         text = pytesseract.image_to_string(
             image,
             lang="eng",
+            config="--psm 6",
         )
 
         return text.strip()
 
-    # ---------------------------------------------------------
-    # Meaningful text check
-    # ---------------------------------------------------------
+    # =========================================================
+    # Meaningful text
+    # =========================================================
 
     @staticmethod
-    def _has_meaningful_text(text: str):
+    def _has_meaningful_text(
+        text: str,
+    ):
         """
-        Determine whether a PDF page contains enough native
-        text to avoid OCR.
-
-        Scanned pages generally have no meaningful native text.
+        Determine whether native PDF text is meaningful enough
+        to avoid OCR.
         """
 
         if not text:
@@ -307,24 +374,31 @@ class OCRService:
             for character in text
         )
 
-        return alphanumeric_characters >= 20
+        return (
+            alphanumeric_characters >= 20
+        )
 
-    # ---------------------------------------------------------
-    # Combine page text
-    # ---------------------------------------------------------
+    # =========================================================
+    # Combine pages
+    # =========================================================
 
     @staticmethod
-    def _combine_page_text(pages):
+    def _combine_page_text(
+        pages,
+    ):
         """
-        Combine page-level text while preserving page boundaries.
+        Combine page text while preserving page numbers.
         """
 
         page_texts = []
 
         for page in pages:
+
             page_texts.append(
                 f"[Page {page['page_number']}]\n"
                 f"{page['text']}"
             )
 
-        return "\n\n".join(page_texts)
+        return "\n\n".join(
+            page_texts
+        )
