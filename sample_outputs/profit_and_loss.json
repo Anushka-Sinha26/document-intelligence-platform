@@ -1,0 +1,350 @@
+{
+  "document_name": "Consolidated Profit & Loss 2026.pdf",
+  "document_type": "profit_and_loss",
+  "extracted_data": {
+    "document_metadata": {
+      "company": null,
+      "currency": "crore",
+      "document_date": "April 18, 2026",
+      "document_number": null,
+      "period": "For the year ended March 31, 2026",
+      "title": "CONSOLIDATED PROFIT AND LOSS ACCOUNT"
+    },
+    "fields": [
+      {
+        "evidence": "Mumbai, April 18, 2026",
+        "name": "Document Date",
+        "page_number": 1,
+        "value": "April 18, 2026"
+      }
+    ],
+    "line_items": [
+      {
+        "evidence": "Interest earned 13 348,615.15",
+        "name": "Interest earned",
+        "page_number": 1,
+        "period": "Year ended March 31, 2026",
+        "value": "348,615.15"
+      },
+      {
+        "evidence": "Interest earned 13 348,615.15 336,367.43",
+        "name": "Interest earned",
+        "page_number": 1,
+        "period": "Year ended March 31, 2025",
+        "value": "336,367.43"
+      },
+      {
+        "evidence": "Other income 14 146,847.66",
+        "name": "Other income",
+        "page_number": 1,
+        "period": "Year ended March 31, 2026",
+        "value": "146,847.66"
+      },
+      {
+        "evidence": "Other income 14 146,847.66 134,548.50",
+        "name": "Other income",
+        "page_number": 1,
+        "period": "Year ended March 31, 2025",
+        "value": "134,548.50"
+      },
+      {
+        "evidence": "Total 495,462.81",
+        "name": "Total Income",
+        "page_number": 1,
+        "period": "Year ended March 31, 2026",
+        "value": "495,462.81"
+      },
+      {
+        "evidence": "Total 495,462.81 470,915.93",
+        "name": "Total Income",
+        "page_number": 1,
+        "period": "Year ended March 31, 2025",
+        "value": "470,915.93"
+      },
+      {
+        "evidence": "Consolidated Net Profit for the year attributable to the group 76,025.97",
+        "name": "Consolidated Net Profit for the year attributable to the group",
+        "page_number": 1,
+        "period": "Year ended March 31, 2026",
+        "value": "76,025.97"
+      },
+      {
+        "evidence": "Consolidated Net Profit for the year attributable to the group 76,025.97 70,792.25",
+        "name": "Consolidated Net Profit for the year attributable to the group",
+        "page_number": 1,
+        "period": "Year ended March 31, 2025",
+        "value": "70,792.25"
+      },
+      {
+        "evidence": "Basic 49.50",
+        "name": "Basic Earnings Per Equity Share",
+        "page_number": 1,
+        "period": "Year ended March 31, 2026",
+        "value": "49.50"
+      },
+      {
+        "evidence": "Basic 49.50 46.41",
+        "name": "Basic Earnings Per Equity Share",
+        "page_number": 1,
+        "period": "Year ended March 31, 2025",
+        "value": "46.41"
+      },
+      {
+        "evidence": "Diluted 49.28",
+        "name": "Diluted Earnings Per Equity Share",
+        "page_number": 1,
+        "period": "Year ended March 31, 2026",
+        "value": "49.28"
+      },
+      {
+        "evidence": "Diluted 49.28 46.20",
+        "name": "Diluted Earnings Per Equity Share",
+        "page_number": 1,
+        "period": "Year ended March 31, 2025",
+        "value": "46.20"
+      }
+    ],
+    "tables": [
+      {
+        "columns": [
+          "Particulars",
+          "Schedule",
+          "Year ended March 31, 2026",
+          "Year ended March 31, 2025"
+        ],
+        "page_number": 1,
+        "rows": [
+          [
+            "I INCOME",
+            null,
+            null,
+            null
+          ],
+          [
+            "Interest earned",
+            "13",
+            "348,615.15",
+            "336,367.43"
+          ],
+          [
+            "Other income",
+            "14",
+            "146,847.66",
+            "134,548.50"
+          ],
+          [
+            "Total Income",
+            null,
+            "495,462.81",
+            "470,915.93"
+          ],
+          [
+            "II EXPENDITURE",
+            null,
+            null,
+            null
+          ],
+          [
+            "Interest expended",
+            "15",
+            "185,491.23",
+            "183,894.20"
+          ],
+          [
+            "Operating expenses",
+            "16",
+            "181,173.91",
+            "176,605.07"
+          ],
+          [
+            "Provisions and contingencies",
+            "189)",
+            "49,578.21",
+            "36,976.49"
+          ],
+          [
+            "Total Expenditure",
+            null,
+            "416,243.35",
+            "397,475.76"
+          ],
+          [
+            "III PROFIT",
+            null,
+            null,
+            null
+          ],
+          [
+            "Consolidated Net Profit for the year before Minority Interest",
+            null,
+            "79,219.46",
+            "73,440.17"
+          ],
+          [
+            "Less : Minority Interest",
+            null,
+            "3,193.49",
+            "2,647.92"
+          ],
+          [
+            "Consolidated Net Profit for the year attributable to the group",
+            null,
+            "76,025.97",
+            "70,792.25"
+          ],
+          [
+            "Brought forward consolidated profit attributable to the group",
+            null,
+            "178,692.55",
+            "150,045.57"
+          ],
+          [
+            "Total Profit",
+            null,
+            "254,718.52",
+            "220,837.82"
+          ],
+          [
+            "IV APPROPRIATIONS",
+            null,
+            null,
+            null
+          ],
+          [
+            "Transfer to Statutory Reserve",
+            null,
+            "19,159.57",
+            "17,260.30"
+          ],
+          [
+            "Interim Dividend paid",
+            null,
+            "3,836.57",
+            "-"
+          ],
+          [
+            "Transfer to General Reserve",
+            null,
+            "7,467.13",
+            "6,734.74"
+          ],
+          [
+            "Transfer to Special Reserve",
+            null,
+            "3,000.00",
+            "3,200.00"
+          ],
+          [
+            "Transfer to Capital Reserve",
+            null,
+            "8,320.40",
+            "507.00"
+          ],
+          [
+            "Dividend pertaining to previous year paid during the year",
+            null,
+            "16,869.41",
+            "14,826.19"
+          ],
+          [
+            "Transfer to / (from) Minority Interest",
+            null,
+            "476.12",
+            "(382.96)"
+          ],
+          [
+            "Transfer to Other Reserves",
+            null,
+            "1.85",
+            "-"
+          ],
+          [
+            "Balance carried over to consolidated balance sheet",
+            null,
+            "195,587.47",
+            "178,692.55"
+          ],
+          [
+            "Total Appropriations",
+            null,
+            "254,718.52",
+            "220,837.82"
+          ],
+          [
+            "V EARNINGS PER EQUITY SHARE (Face value = 1/ - per share)",
+            "18 (18)",
+            null,
+            null
+          ],
+          [
+            "Basic",
+            null,
+            "49.50",
+            "46.41"
+          ],
+          [
+            "Diluted",
+            null,
+            "49.28",
+            "46.20"
+          ]
+        ],
+        "title": "CONSOLIDATED PROFIT AND LOSS ACCOUNT"
+      }
+    ]
+  },
+  "file_validation": {
+    "file_type": "application/pdf",
+    "page_count": 1
+  },
+  "overall_confidence": null,
+  "processing_metadata": {
+    "ocr_used": true,
+    "page_count": 1
+  },
+  "processing_status": "PASS",
+  "validation": {
+    "checks": [
+      {
+        "calculated_value": "495462.81",
+        "formula": "Interest Earned + Other Income \u2248 Total Income",
+        "input_values": {
+          "interest_earned": "348615.15",
+          "other_income": "146847.66"
+        },
+        "reported_value": "495462.81",
+        "status": "PASS",
+        "variance": "0.00"
+      },
+      {
+        "calculated_value": "416243.35",
+        "formula": "Interest Expended + Operating Expenses + Provisions \u2248 Total Expenditure",
+        "input_values": {
+          "interest_expended": "185491.23",
+          "operating_expenses": "181173.91",
+          "provisions": "49578.21"
+        },
+        "reported_value": "416243.35",
+        "status": "PASS",
+        "variance": "0.00"
+      },
+      {
+        "calculated_value": null,
+        "formula": "Total Income - Total Expenditure \u2248 Consolidated Net Profit Before Minority Interest",
+        "input_values": {},
+        "reported_value": null,
+        "status": "NOT_APPLICABLE",
+        "variance": null
+      },
+      {
+        "calculated_value": null,
+        "formula": "Profit Before Minority Interest - Minority Interest \u2248 Attributable Group Profit",
+        "input_values": {},
+        "reported_value": null,
+        "status": "NOT_APPLICABLE",
+        "variance": null
+      }
+    ],
+    "status": "PASS"
+  }
+}

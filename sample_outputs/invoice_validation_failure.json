@@ -1,0 +1,158 @@
+{
+  "document_name": "batch2-0999.jpg",
+  "document_type": "invoice",
+  "extracted_data": {
+    "document_metadata": {
+      "company": "BLUE STREAK ELECTRONICS",
+      "currency": "$",
+      "document_date": "March 9, 2022",
+      "document_number": "118",
+      "period": null,
+      "title": "INVOICE"
+    },
+    "fields": [
+      {
+        "evidence": "DUE DATE: April 9, 2022",
+        "name": "Due Date",
+        "page_number": 1,
+        "value": "April 9, 2022"
+      },
+      {
+        "evidence": "BLUE STREAK ELECTRONICS",
+        "name": "Bill From",
+        "page_number": 1,
+        "value": "BLUE STREAK ELECTRONICS"
+      },
+      {
+        "evidence": "GEONICS LTD",
+        "name": "Bill To",
+        "page_number": 1,
+        "value": "GEONICS LTD"
+      },
+      {
+        "evidence": "Subtotal 804",
+        "name": "Subtotal",
+        "page_number": 1,
+        "value": "804"
+      },
+      {
+        "evidence": "Sales Tax 8% 63.47",
+        "name": "Sales Tax",
+        "page_number": 1,
+        "value": "63.47"
+      },
+      {
+        "evidence": "S&H 50",
+        "name": "S&H",
+        "page_number": 1,
+        "value": "50"
+      },
+      {
+        "evidence": "Total Due 916.47",
+        "name": "Total Due",
+        "page_number": 1,
+        "value": "916.47"
+      }
+    ],
+    "line_items": [
+      {
+        "evidence": "01 2 346.00 346.00",
+        "name": "3M Scotchcast Electrical Resin #8 - 16 Ibs/kit 16 Ibs/case",
+        "page_number": 1,
+        "period": null,
+        "value": "346.00"
+      },
+      {
+        "evidence": "02 4 226.00 226.00",
+        "name": "3M DP460 EG Epoxy Adhesive - 50ml 2:1 12 kits/case",
+        "page_number": 1,
+        "period": null,
+        "value": "226.00"
+      },
+      {
+        "evidence": "03 6 136.00 136.00",
+        "name": "Freight AE Blake Montreal to Aerospace Metal",
+        "page_number": 1,
+        "period": null,
+        "value": "136.00"
+      },
+      {
+        "evidence": "04 Lead-time is a mere estimate. Actual delivery may differ 8 96.00 96.00 without notice",
+        "name": "Lead-time is a mere estimate. Actual delivery may differ without notice",
+        "page_number": 1,
+        "period": null,
+        "value": "96.00"
+      }
+    ],
+    "tables": [
+      {
+        "columns": [
+          "ID",
+          "DESCRIPTION",
+          "QUANTITY",
+          "PRICE, $",
+          "TOTAL, $"
+        ],
+        "page_number": 1,
+        "rows": [
+          [
+            "01",
+            "3M Scotchcast Electrical Resin #8 - 16 Ibs/kit 16 Ibs/case",
+            "2",
+            "346.00",
+            "346.00"
+          ],
+          [
+            "02",
+            "3M DP460 EG Epoxy Adhesive - 50ml 2:1 12 kits/case",
+            "4",
+            "226.00",
+            "226.00"
+          ],
+          [
+            "03",
+            "Freight AE Blake Montreal to Aerospace Metal",
+            "6",
+            "136.00",
+            "136.00"
+          ],
+          [
+            "04",
+            "Lead-time is a mere estimate. Actual delivery may differ without notice",
+            "8",
+            "96.00",
+            "96.00"
+          ]
+        ],
+        "title": "Invoice Items"
+      }
+    ]
+  },
+  "file_validation": {
+    "file_type": "image/jpeg",
+    "page_count": 1
+  },
+  "overall_confidence": null,
+  "processing_metadata": {
+    "ocr_used": true,
+    "page_count": 1
+  },
+  "processing_status": "FAILED",
+  "validation": {
+    "checks": [
+      {
+        "calculated_value": "917.47",
+        "formula": "Subtotal + Tax + Shipping/Handling \u2248 Total",
+        "input_values": {
+          "shipping": "50.00",
+          "subtotal": "804.00",
+          "tax": "63.47"
+        },
+        "reported_value": "916.47",
+        "status": "FAIL",
+        "variance": "1.00"
+      }
+    ],
+    "status": "FAIL"
+  }
+}

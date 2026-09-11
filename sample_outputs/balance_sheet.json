@@ -1,0 +1,254 @@
+{
+  "document_name": "Consolidated Balance Sheet 2026.pdf",
+  "document_type": "balance_sheet",
+  "extracted_data": {
+    "document_metadata": {
+      "company": "HDFC Bank Limited",
+      "currency": "crore",
+      "document_date": "March 31, 2026",
+      "document_number": null,
+      "period": "As at March 31, 2026",
+      "title": "CONSOLIDATED BALANCE SHEET"
+    },
+    "fields": [
+      {
+        "evidence": "Contingent liabilities 12 3,479,487.31 _2,709,921.85",
+        "name": "Contingent liabilities (March 31, 2026)",
+        "page_number": 1,
+        "value": "3,479,487.31"
+      },
+      {
+        "evidence": "Bills for collection 82,470.05 70,679.55",
+        "name": "Bills for collection (March 31, 2026)",
+        "page_number": 1,
+        "value": "82,470.05"
+      }
+    ],
+    "line_items": [
+      {
+        "evidence": "Capital 1 1,539.34 765.22",
+        "name": "Capital",
+        "page_number": 1,
+        "period": "March 31, 2026",
+        "value": "1,539.34"
+      },
+      {
+        "evidence": "Capital 1 1,539.34 765.22",
+        "name": "Capital",
+        "page_number": 1,
+        "period": "March 31, 2025",
+        "value": "765.22"
+      },
+      {
+        "evidence": "Deposits 3 3,099,638.29  2,710,898.23",
+        "name": "Deposits",
+        "page_number": 1,
+        "period": "March 31, 2026",
+        "value": "3,099,638.29"
+      },
+      {
+        "evidence": "Deposits 3 3,099,638.29  2,710,898.23",
+        "name": "Deposits",
+        "page_number": 1,
+        "period": "March 31, 2025",
+        "value": "2,710,898.23"
+      },
+      {
+        "evidence": "Total 4,908,040.84 _4,392,417.42",
+        "name": "Total Capital and Liabilities",
+        "page_number": 1,
+        "period": "March 31, 2026",
+        "value": "4,908,040.84"
+      },
+      {
+        "evidence": "Total 4,908,040.84 _4,392,417.42",
+        "name": "Total Capital and Liabilities",
+        "page_number": 1,
+        "period": "March 31, 2025",
+        "value": "4,392,417.42"
+      },
+      {
+        "evidence": "Advances 9 3,050,783.23 2,724,038.16",
+        "name": "Advances",
+        "page_number": 1,
+        "period": "March 31, 2026",
+        "value": "3,050,783.23"
+      },
+      {
+        "evidence": "Advances 9 3,050,783.23 2,724,038.16",
+        "name": "Advances",
+        "page_number": 1,
+        "period": "March 31, 2025",
+        "value": "2,724,038.16"
+      },
+      {
+        "evidence": "Total 4,908,040.84 _4,392,417.42",
+        "name": "Total Assets",
+        "page_number": 1,
+        "period": "March 31, 2026",
+        "value": "4,908,040.84"
+      },
+      {
+        "evidence": "Total 4,908,040.84 _4,392,417.42",
+        "name": "Total Assets",
+        "page_number": 1,
+        "period": "March 31, 2025",
+        "value": "4,392,417.42"
+      }
+    ],
+    "tables": [
+      {
+        "columns": [
+          "CAPITAL AND LIABILITIES / ASSETS",
+          "Schedule",
+          "March 31, 2026",
+          "March 31, 2025"
+        ],
+        "page_number": 1,
+        "rows": [
+          [
+            "Capital",
+            "1",
+            "1,539.34",
+            "765.22"
+          ],
+          [
+            "Employees stock options / units outstanding",
+            "18 (4)",
+            "4,545.11",
+            "3,805.19"
+          ],
+          [
+            "Reserves and surplus",
+            "2",
+            "579,975.02",
+            "517,218.98"
+          ],
+          [
+            "Minority interest",
+            "2A",
+            "22,384.96",
+            "16,359.04"
+          ],
+          [
+            "Deposits",
+            "3",
+            "3,099,638.29",
+            "2,710,898.23"
+          ],
+          [
+            "Borrowings",
+            "4",
+            "588,484.55",
+            "634,605.57"
+          ],
+          [
+            "Other liabilities and provisions",
+            "5",
+            "252,977.53",
+            "188,163.66"
+          ],
+          [
+            "Policyholders' funds",
+            null,
+            "358,496.04",
+            "320,601.53"
+          ],
+          [
+            "Total Capital and Liabilities",
+            null,
+            "4,908,040.84",
+            "4,392,417.42"
+          ],
+          [
+            "ASSETS",
+            null,
+            null,
+            null
+          ],
+          [
+            "Cash and balances with Reserve Bank of India",
+            "6",
+            "200,707.11",
+            "144,390.25"
+          ],
+          [
+            "Balances with banks and money at call and short notice",
+            "7",
+            "111,218.94",
+            "105,557.65"
+          ],
+          [
+            "Investments",
+            "8",
+            "1,280,216.29",
+            "1,186,472.89"
+          ],
+          [
+            "Advances",
+            "9",
+            "3,050,783.23",
+            "2,724,038.16"
+          ],
+          [
+            "Fixed assets",
+            "10",
+            "16,491.59",
+            "15,257.94"
+          ],
+          [
+            "Other assets",
+            "11",
+            "248,628.68",
+            "215,800.53"
+          ],
+          [
+            "Total Assets",
+            null,
+            "4,908,040.84",
+            "4,392,417.42"
+          ],
+          [
+            "Contingent liabilities",
+            "12",
+            "3,479,487.31",
+            "2,709,921.85"
+          ],
+          [
+            "Bills for collection",
+            null,
+            "82,470.05",
+            "70,679.55"
+          ]
+        ],
+        "title": "CONSOLIDATED BALANCE SHEET"
+      }
+    ]
+  },
+  "file_validation": {
+    "file_type": "application/pdf",
+    "page_count": 1
+  },
+  "overall_confidence": null,
+  "processing_metadata": {
+    "ocr_used": true,
+    "page_count": 1
+  },
+  "processing_status": "PASS",
+  "validation": {
+    "checks": [
+      {
+        "calculated_value": "4908040.84",
+        "formula": "Total Capital & Liabilities \u2248 Total Assets",
+        "input_values": {
+          "total_assets": "4908040.84",
+          "total_capital_and_liabilities": "4908040.84"
+        },
+        "reported_value": "4908040.84",
+        "status": "PASS",
+        "variance": "0.00"
+      }
+    ],
+    "status": "PASS"
+  }
+}

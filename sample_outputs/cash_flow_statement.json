@@ -1,0 +1,397 @@
+{
+  "document_name": "Consolidated Cash Flow Statement 2026.pdf",
+  "document_type": "cash_flow_statement",
+  "extracted_data": {
+    "document_metadata": {
+      "company": "HDFC Bank Limited",
+      "currency": "crore",
+      "document_date": "April 18, 2026",
+      "document_number": null,
+      "period": "For the year ended March 31, 2026",
+      "title": "CONSOLIDATED CASH FLOW STATEMENT"
+    },
+    "fields": [
+      {
+        "evidence": "Mumbai, April 18, 2026",
+        "name": "Place of Report",
+        "page_number": 2,
+        "value": "Mumbai"
+      },
+      {
+        "evidence": "Mumbai, April 18, 2026",
+        "name": "Date of Report",
+        "page_number": 2,
+        "value": "April 18, 2026"
+      }
+    ],
+    "line_items": [
+      {
+        "evidence": "Consolidated Profit after tax and minority interest 76,025.97",
+        "name": "Consolidated Profit after tax and minority interest",
+        "page_number": 1,
+        "period": "Year ended March 31, 2026",
+        "value": "76,025.97"
+      },
+      {
+        "evidence": "Consolidated Profit after tax and minority interest 76,025.97 70,792.25",
+        "name": "Consolidated Profit after tax and minority interest",
+        "page_number": 1,
+        "period": "Year ended March 31, 2025",
+        "value": "70,792.25"
+      },
+      {
+        "evidence": "Net cash flows from operating activi 113,506.38",
+        "name": "Net cash flows from operating activi",
+        "page_number": 1,
+        "period": "Year ended March 31, 2026",
+        "value": "113,506.38"
+      },
+      {
+        "evidence": "Net cash flows from operating activi 113,506.38 127,241.84",
+        "name": "Net cash flows from operating activi",
+        "page_number": 1,
+        "period": "Year ended March 31, 2025",
+        "value": "127,241.84"
+      },
+      {
+        "evidence": "Net cash flow from / (used in) investing acti 6,362.72",
+        "name": "Net cash flow from / (used in) investing acti",
+        "page_number": 1,
+        "period": "Year ended March 31, 2026",
+        "value": "6,362.72"
+      },
+      {
+        "evidence": "Net cash flow from / (used in) investing acti 6,362.72 (3,850.64)",
+        "name": "Net cash flow from / (used in) investing acti",
+        "page_number": 1,
+        "period": "Year ended March 31, 2025",
+        "value": "(3,850.64)"
+      },
+      {
+        "evidence": "Net cash flow used in financing activities (59,004.85)",
+        "name": "Net cash flow used in financing activities",
+        "page_number": 2,
+        "period": "Year ended March 31, 2026",
+        "value": "(59,004.85)"
+      },
+      {
+        "evidence": "Net cash flow used in financing activities (59,004.85) (102,477.54)",
+        "name": "Net cash flow used in financing activities",
+        "page_number": 2,
+        "period": "Year ended March 31, 2025",
+        "value": "(102,477.54)"
+      },
+      {
+        "evidence": "Net increase in cash and cash equivalents 61,978.15",
+        "name": "Net increase in cash and cash equivalents",
+        "page_number": 2,
+        "period": "Year ended March 31, 2026",
+        "value": "61,978.15"
+      },
+      {
+        "evidence": "Net increase in cash and cash equivalents 61,978.15 21,113.39",
+        "name": "Net increase in cash and cash equivalents",
+        "page_number": 2,
+        "period": "Year ended March 31, 2025",
+        "value": "21,113.39"
+      },
+      {
+        "evidence": "Cash and cash equivalents at the end of the year 311,926.05",
+        "name": "Cash and cash equivalents at the end of the year",
+        "page_number": 2,
+        "period": "Year ended March 31, 2026",
+        "value": "311,926.05"
+      },
+      {
+        "evidence": "Cash and cash equivalents at the end of the year 311,926.05 249,947.90",
+        "name": "Cash and cash equivalents at the end of the year",
+        "page_number": 2,
+        "period": "Year ended March 31, 2025",
+        "value": "249,947.90"
+      }
+    ],
+    "tables": [
+      {
+        "columns": [
+          "Particulars",
+          "Year ended March 31, 2026",
+          "Year ended March 31, 2025"
+        ],
+        "page_number": 1,
+        "rows": [
+          [
+            "Cash flows from operating activities:",
+            null,
+            null
+          ],
+          [
+            "Consolidated Profit after tax and minority interest",
+            "76,025.97",
+            "70,792.25"
+          ],
+          [
+            "Add: Provision for income tax ( Refer schedule 18 (9))",
+            "22,921.99",
+            "22,801.88"
+          ],
+          [
+            "Consolidated profit before income tax and after minori",
+            "98,947.96",
+            "93,594.13"
+          ],
+          [
+            "Adjustments for:",
+            null,
+            null
+          ],
+          [
+            "Depreciation on fixed assets",
+            "4,194.90",
+            "3,805.23"
+          ],
+          [
+            "Loss on revaluation of investments",
+            "7,739.96",
+            "3,909.10"
+          ],
+          [
+            "Amortisation of premium on investments",
+            "986.17",
+            "87.07"
+          ],
+          [
+            "Profit on sale of fixed assets",
+            "(207.91)",
+            "(22.03)"
+          ],
+          [
+            "(Profit) / loss on sale of investment in subsidiary",
+            "(7,000.27)",
+            "8.00"
+          ],
+          [
+            "Provision / charge for non performing assets",
+            "14,445.98",
+            "15,385.24"
+          ],
+          [
+            "Floating provisions",
+            "9,000.00",
+            "-"
+          ],
+          [
+            "Provision / (write-back) for standard assets and contingencies",
+            "3,210.24",
+            "(1,210.63)"
+          ],
+          [
+            "Employee stock options / units expense",
+            "2,228.30",
+            "2,086.05"
+          ],
+          [
+            null,
+            "133,545.33",
+            "117,642.16"
+          ],
+          [
+            "Adjustments for:",
+            null,
+            null
+          ],
+          [
+            "Increase in investments",
+            "(102,572.73)",
+            "(180,362.67)"
+          ],
+          [
+            "Increase in advances",
+            "(340,270.74)",
+            "(169,918.22)"
+          ],
+          [
+            "Increase in deposits",
+            "388,740.06",
+            "334,010.95"
+          ],
+          [
+            "Increase in other assets",
+            "(29,678.54)",
+            "(10,829.67)"
+          ],
+          [
+            "Increase in other liabilities and provisions",
+            "52,338.92",
+            "13,117.98"
+          ],
+          [
+            "Increase in policyholders\u2019 funds",
+            "34,060.45",
+            "43,289.99"
+          ],
+          [
+            null,
+            "136,162.75",
+            "146,950.52"
+          ],
+          [
+            "Direct taxes paid (net of refunds)",
+            "(22,656.37)",
+            "(19,708.68)"
+          ],
+          [
+            "Net cash flows from operating activi",
+            "113,506.38",
+            "127,241.84"
+          ],
+          [
+            "Cash flows from investing activities:",
+            null,
+            null
+          ],
+          [
+            "Purchase of fixed assets",
+            "(3,889.97)",
+            "(4,075.89)"
+          ],
+          [
+            "Proceeds from sale of fixed assets",
+            "527.56",
+            "100.72"
+          ],
+          [
+            "Proceeds from sale of investment in subsidiary (net of expenses)",
+            "9,806.00",
+            "192.00"
+          ],
+          [
+            "Investment in subsidiaries",
+            "(80.87)",
+            "(67.47)"
+          ],
+          [
+            "Net cash flow from / (used in) investing acti",
+            "6,362.72",
+            "(3,850.64)"
+          ]
+        ],
+        "title": "CONSOLIDATED CASH FLOW STATEMENT (Part 1)"
+      },
+      {
+        "columns": [
+          "Particulars",
+          "Year ended March 31, 2026",
+          "Year ended March 31, 2025"
+        ],
+        "page_number": 2,
+        "rows": [
+          [
+            "Cash flows from financing activities:",
+            null,
+            null
+          ],
+          [
+            "Increase in minority interest (including issue of ESOPs by subsidiaries)",
+            "2,331.21",
+            "2,382.88"
+          ],
+          [
+            "Proceeds from issue of share capital",
+            "5,108.50",
+            "6,346.50"
+          ],
+          [
+            "Proceeds from issue of shares through subsidiary IPO (net of issue expenses)",
+            "2,456.61",
+            "-"
+          ],
+          [
+            "Proceeds from issue of Tier 1 and Tier 2 capital instruments.",
+            "700.00",
+            "1,182.00"
+          ],
+          [
+            "Repayment of Tier 1 and Tier 2 capital instruments",
+            "-",
+            "(500.00)"
+          ],
+          [
+            "Repayments from other borrowings (net)",
+            "(48,895.19)",
+            "(97,062.73)"
+          ],
+          [
+            "Dividend paid during the year",
+            "(20,705.98)",
+            "(14,826.19)"
+          ],
+          [
+            "Net cash flow used in financing activities",
+            "(59,004.85)",
+            "(102,477.54)"
+          ],
+          [
+            "Effect of fluctuation in foreign currency translation reserve",
+            "1,113.90",
+            "199.73"
+          ],
+          [
+            "Net increase in cash and cash equivalents",
+            "61,978.15",
+            "21,113.39"
+          ],
+          [
+            "Cash and cash equivalents at the beginning of the year",
+            "249,947.90",
+            "228,834.51"
+          ],
+          [
+            "Cash and cash equivalents at the end of the year",
+            "311,926.05",
+            "249,947.90"
+          ]
+        ],
+        "title": "CONSOLIDATED CASH FLOW STATEMENT (Part 2)"
+      }
+    ]
+  },
+  "file_validation": {
+    "file_type": "application/pdf",
+    "page_count": 2
+  },
+  "overall_confidence": null,
+  "processing_metadata": {
+    "ocr_used": true,
+    "page_count": 2
+  },
+  "processing_status": "PASS",
+  "validation": {
+    "checks": [
+      {
+        "calculated_value": "61978.15",
+        "formula": "Operating Cash Flow + Investing Cash Flow + Financing Cash Flow + FX Adjustment \u2248 Net Increase in Cash",
+        "input_values": {
+          "financing_cash_flow": "-59004.85",
+          "fx_adjustment": "1113.90",
+          "investing_cash_flow": "6362.72",
+          "operating_cash_flow": "113506.38"
+        },
+        "reported_value": "61978.15",
+        "status": "PASS",
+        "variance": "0.00"
+      },
+      {
+        "calculated_value": "311926.05",
+        "formula": "Opening Cash + Net Increase in Cash + Applicable Adjustments \u2248 Closing Cash",
+        "input_values": {
+          "net_increase_in_cash": "61978.15",
+          "opening_cash": "249947.90"
+        },
+        "reported_value": "311926.05",
+        "status": "PASS",
+        "variance": "0.00"
+      }
+    ],
+    "status": "PASS"
+  }
+}

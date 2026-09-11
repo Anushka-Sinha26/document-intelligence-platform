@@ -1,0 +1,266 @@
+{
+  "document_name": "batch1-1109.jpg",
+  "document_type": "invoice",
+  "extracted_data": {
+    "document_metadata": {
+      "company": "Cruz PLC",
+      "currency": "$",
+      "document_date": "07/03/2013",
+      "document_number": "94404257",
+      "period": null,
+      "title": "Invoice"
+    },
+    "fields": [
+      {
+        "evidence": "Cruz PLC",
+        "name": "Seller Name",
+        "page_number": 1,
+        "value": "Cruz PLC"
+      },
+      {
+        "evidence": "USNV Harris\nFPO AA 34966",
+        "name": "Seller Address",
+        "page_number": 1,
+        "value": "USNV Harris FPO AA 34966"
+      },
+      {
+        "evidence": "Tax Id: 964-99-8203",
+        "name": "Seller Tax Id",
+        "page_number": 1,
+        "value": "964-99-8203"
+      },
+      {
+        "evidence": "IBAN: GB31XOVK34958853133204",
+        "name": "Seller IBAN",
+        "page_number": 1,
+        "value": "GB31XOVK34958853133204"
+      },
+      {
+        "evidence": "Sandoval-Phillips",
+        "name": "Client Name",
+        "page_number": 1,
+        "value": "Sandoval-Phillips"
+      },
+      {
+        "evidence": "23699 James Villages Suite 818\nWest Tamara, MS 58825",
+        "name": "Client Address",
+        "page_number": 1,
+        "value": "23699 James Villages Suite 818 West Tamara, MS 58825"
+      },
+      {
+        "evidence": "Tax Id: 976-94-5245",
+        "name": "Client Tax Id",
+        "page_number": 1,
+        "value": "976-94-5245"
+      },
+      {
+        "evidence": "$ 126,27",
+        "name": "Total Net Worth",
+        "page_number": 1,
+        "value": "$ 126,27"
+      },
+      {
+        "evidence": "$ 12,63",
+        "name": "Total VAT",
+        "page_number": 1,
+        "value": "$ 12,63"
+      },
+      {
+        "evidence": "$ 138,90",
+        "name": "Total Gross Worth",
+        "page_number": 1,
+        "value": "$ 138,90"
+      }
+    ],
+    "line_items": [
+      {
+        "evidence": "tks BOO28NAO6EC Shoeless Joe 5,00 eacn 3,49 17,45 10% 19,20",
+        "name": "BOO28NAO6EC Shoeless Joe",
+        "page_number": 1,
+        "period": null,
+        "value": "19,20"
+      },
+      {
+        "evidence": "2. The Fifty Greatest Conspiracies 3,00 eacn 4,49 13,47 10% 14,82\nof All Time History s Biggest\nMyster",
+        "name": "The Fifty Greatest Conspiracies of All Time History s Biggest Myster",
+        "page_number": 1,
+        "period": null,
+        "value": "14,82"
+      },
+      {
+        "evidence": "Be Story of a Soul: The 5,00 eacn 9,35 46,75 10% 51,42\nAutobiography of St. Therese of\nLisieux",
+        "name": "Story of a Soul: The Autobiography of St. Therese of Lisieux",
+        "page_number": 1,
+        "period": null,
+        "value": "51,42"
+      },
+      {
+        "evidence": "4. The Complete Idiots Guide to 4,00 eacn 4,49 17,96 10% 19,76\nTrouble-Free Home Re",
+        "name": "The Complete Idiots Guide to Trouble-Free Home Re",
+        "page_number": 1,
+        "period": null,
+        "value": "19,76"
+      },
+      {
+        "evidence": "5: Rebecca to the Rescue 2,00 eacn 4,89 9,78 10% 10,76\n(American Girl (Quality))",
+        "name": "Rebecca to the Rescue (American Girl (Quality))",
+        "page_number": 1,
+        "period": null,
+        "value": "10,76"
+      },
+      {
+        "evidence": "6. Tales from the Buffalo Bills 1,00 eacn 5,50 5,50 10% 6,05",
+        "name": "Tales from the Buffalo Bills",
+        "page_number": 1,
+        "period": null,
+        "value": "6,05"
+      },
+      {
+        "evidence": "7. Vietnam, The Decisive Battles 2,00 eacn 7,68 15,36 10% 16,90",
+        "name": "Vietnam, The Decisive Battles",
+        "page_number": 1,
+        "period": null,
+        "value": "16,90"
+      }
+    ],
+    "tables": [
+      {
+        "columns": [
+          "No.",
+          "Description",
+          "Qty",
+          "UM",
+          "Net price",
+          "Net worth",
+          "VAT [%]",
+          "Gross worth"
+        ],
+        "page_number": 1,
+        "rows": [
+          [
+            "tks",
+            "BOO28NAO6EC Shoeless Joe",
+            "5,00",
+            "eacn",
+            "3,49",
+            "17,45",
+            "10%",
+            "19,20"
+          ],
+          [
+            "2.",
+            "The Fifty Greatest Conspiracies of All Time History s Biggest Myster",
+            "3,00",
+            "eacn",
+            "4,49",
+            "13,47",
+            "10%",
+            "14,82"
+          ],
+          [
+            "Be",
+            "Story of a Soul: The Autobiography of St. Therese of Lisieux",
+            "5,00",
+            "eacn",
+            "9,35",
+            "46,75",
+            "10%",
+            "51,42"
+          ],
+          [
+            "4.",
+            "The Complete Idiots Guide to Trouble-Free Home Re",
+            "4,00",
+            "eacn",
+            "4,49",
+            "17,96",
+            "10%",
+            "19,76"
+          ],
+          [
+            "5:",
+            "Rebecca to the Rescue (American Girl (Quality))",
+            "2,00",
+            "eacn",
+            "4,89",
+            "9,78",
+            "10%",
+            "10,76"
+          ],
+          [
+            "6.",
+            "Tales from the Buffalo Bills",
+            "1,00",
+            "eacn",
+            "5,50",
+            "5,50",
+            "10%",
+            "6,05"
+          ],
+          [
+            "7.",
+            "Vietnam, The Decisive Battles",
+            "2,00",
+            "eacn",
+            "7,68",
+            "15,36",
+            "10%",
+            "16,90"
+          ]
+        ],
+        "title": "ITEMS"
+      },
+      {
+        "columns": [
+          "VAT [%]",
+          "Net worth",
+          "VAT",
+          "Gross worth"
+        ],
+        "page_number": 1,
+        "rows": [
+          [
+            "10%",
+            "126,27",
+            "12,63",
+            "138,90"
+          ],
+          [
+            "Total",
+            "$ 126,27",
+            "$ 12,63",
+            "$ 138,90"
+          ]
+        ],
+        "title": "SUMMARY"
+      }
+    ]
+  },
+  "file_validation": {
+    "file_type": "image/jpeg",
+    "page_count": 1
+  },
+  "overall_confidence": null,
+  "processing_metadata": {
+    "ocr_used": true,
+    "page_count": 1
+  },
+  "processing_status": "PASS",
+  "validation": {
+    "checks": [
+      {
+        "calculated_value": "138.90",
+        "formula": "Subtotal + Tax \u2248 Total",
+        "input_values": {
+          "shipping": null,
+          "subtotal": "126.27",
+          "tax": "12.63"
+        },
+        "reported_value": "138.90",
+        "status": "PASS",
+        "variance": "0.00"
+      }
+    ],
+    "status": "PASS"
+  }
+}

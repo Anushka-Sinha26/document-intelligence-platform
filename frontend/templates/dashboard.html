@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Document Intelligence Platform</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+            <div class="brand">
+                <div class="brand-icon">DI</div>
+
+                <div>
+                    <h1>Document Intelligence</h1>
+                    <span>Financial Document Platform</span>
+                </div>
+            </div>
+
+            <nav class="navigation">
+
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">▦</span>
+                    Dashboard
+                </a>
+
+                <a href="#documents" class="nav-item">
+                    <span class="nav-icon">▤</span>
+                    Documents
+                </a>
+
+                <a href="#upload" class="nav-item">
+                    <span class="nav-icon">＋</span>
+                    Process Document
+                </a>
+
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator"></div>
+                <span>API Connected</span>
+            </div>
+
+        </aside>
+
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Header -->
+            <header class="topbar">
+
+                <div>
+                    <p class="eyebrow">DOCUMENT INTELLIGENCE</p>
+                    <h2>Processing Dashboard</h2>
+                    <p class="subtitle">
+                        Upload, extract and validate financial documents.
+                    </p>
+                </div>
+
+                <div class="api-status">
+                    <span class="status-dot"></span>
+                    <span>System Online</span>
+                </div>
+
+            </header>
+
+
+            <!-- Statistics -->
+            <section class="stats-grid">
+
+                <div class="stat-card">
+                    <div class="stat-label">Processed Documents</div>
+                    <div class="stat-value" id="totalDocuments">0</div>
+                    <div class="stat-description">
+                        Documents stored in database
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Passed</div>
+                    <div class="stat-value success-text" id="passedDocuments">
+                        0
+                    </div>
+                    <div class="stat-description">
+                        Successfully validated
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Failed</div>
+                    <div class="stat-value danger-text" id="failedDocuments">
+                        0
+                    </div>
+                    <div class="stat-description">
+                        Require attention
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Supported Types</div>
+                    <div class="stat-value">4</div>
+                    <div class="stat-description">
+                        Financial document categories
+                    </div>
+                </div>
+
+            </section>
+
+
+            <!-- Upload Section -->
+            <section class="panel" id="upload">
+
+                <div class="panel-header">
+
+                    <div>
+                        <p class="section-label">NEW DOCUMENT</p>
+                        <h3>Process a Document</h3>
+                    </div>
+
+                </div>
+
+                <form id="uploadForm">
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label for="documentType">
+                                Document Type
+                            </label>
+
+                            <select id="documentType" required>
+
+                                <option value="">
+                                    Select document type
+                                </option>
+
+                                <option value="invoice">
+                                    Invoice
+                                </option>
+
+                                <option value="balance_sheet">
+                                    Balance Sheet
+                                </option>
+
+                                <option value="profit_and_loss">
+                                    Profit & Loss
+                                </option>
+
+                                <option value="cash_flow_statement">
+                                    Cash Flow Statement
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="documentFile">
+                                Document File
+                            </label>
+
+                            <input
+                                type="file"
+                                id="documentFile"
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                required
+                            />
+
+                            <small>
+                                Supported: PDF, JPG, JPEG, PNG | Maximum 3 pages
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                        id="processButton"
+                    >
+                        <span>Process Document</span>
+                    </button>
+
+                </form>
+
+
+                <!-- Processing Message -->
+
+                <div
+                    id="processingMessage"
+                    class="message-box hidden"
+                >
+                    Processing document. Please wait...
+                </div>
+
+
+                <!-- Error Message -->
+
+                <div
+                    id="errorMessage"
+                    class="message-box error hidden"
+                ></div>
+
+
+                <!-- Success Message -->
+
+                <div
+                    id="successMessage"
+                    class="message-box success hidden"
+                ></div>
+
+            </section>
+
+
+            <!-- Documents Section -->
+            <section class="panel" id="documents">
+
+                <div class="panel-header">
+
+                    <div>
+                        <p class="section-label">DATABASE</p>
+                        <h3>Processed Documents</h3>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="refreshDocuments"
+                    >
+                        Refresh
+                    </button>
+
+                </div>
+
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>Document Name</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Processed At</th>
+                                <th>Action</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="documentsTableBody">
+
+                            <tr>
+                                <td colspan="5" class="empty-state">
+                                    Loading documents...
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+            <!-- Result Section -->
+
+            <section
+                class="panel hidden"
+                id="resultPanel"
+            >
+
+                <div class="panel-header">
+
+                    <div>
+                        <p class="section-label">PROCESSING RESULT</p>
+                        <h3 id="resultTitle">
+                            Document Result
+                        </h3>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="closeResult"
+                    >
+                        Close
+                    </button>
+
+                </div>
+
+
+                <!-- Result Summary -->
+
+                <div class="result-summary">
+
+                    <div class="result-item">
+                        <span>Document Type</span>
+                        <strong id="resultDocumentType">-</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>Processing Status</span>
+                        <strong id="resultProcessingStatus">-</strong>
+                    </div>
+
+                    <div class="result-item">
+                        <span>File Validation</span>
+                        <strong id="resultFileValidation">-</strong>
+                    </div>
+
+                </div>
+
+
+                <!-- Extracted Data -->
+
+                <div class="result-section">
+
+                    <h4>Extracted Data</h4>
+
+                    <div id="extractedDataContainer">
+                        No extracted data available.
+                    </div>
+
+                </div>
+
+
+                <!-- Validation -->
+
+                <div class="result-section">
+
+                    <h4>Financial Validation</h4>
+
+                    <div id="validationContainer">
+                        No validation result available.
+                    </div>
+
+                </div>
+
+
+                <!-- Raw JSON -->
+
+                <div class="result-section">
+
+                    <div class="json-header">
+
+                        <h4>Raw JSON</h4>
+
+                        <button
+                            type="button"
+                            class="secondary-button"
+                            id="copyJson"
+                        >
+                            Copy JSON
+                        </button>
+
+                    </div>
+
+                    <pre id="rawJson"></pre>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+</body>
+</html>

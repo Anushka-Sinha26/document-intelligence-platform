@@ -1,0 +1,10 @@
+Flask
+Flask-SQLAlchemy
+flask-smorest
+python-dotenv
+Pillow
+pypdf
+pytest
+pytesseract
+PyMuPDF
+google-genai
