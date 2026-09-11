@@ -19,4 +19,4 @@ ENV TESSERACT_CMD=/usr/bin/tesseract
 
 EXPOSE 10000
 
-CMD ["gunicorn", "--chdir", "backend", "--bind", "0.0.0.0:10000", "app.main:app"]
+CMD ["gunicorn", "--chdir", "backend", "--bind", "0.0.0.0:10000", "--timeout", "180", "--workers", "1", "app.main:app"]

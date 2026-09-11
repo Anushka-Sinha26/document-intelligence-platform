@@ -12,12 +12,15 @@ class OCRService:
 
     Processing strategy:
         - Native PDF text is extracted directly.
-        - Scanned PDF pages are rendered as images and sent to
-          Tesseract OCR.
+        - Scanned PDF pages are rendered at a memory-efficient
+          resolution and sent to Tesseract OCR.
         - JPG/JPEG/PNG files are processed using Tesseract OCR.
 
     Page numbers are preserved so that later extraction can
     provide evidence and page references.
+
+    The OCR pipeline is deliberately memory-conscious because
+    the deployed service may run on a resource-limited instance.
     """
 
     SUPPORTED_IMAGE_EXTENSIONS = {
@@ -25,6 +28,10 @@ class OCRService:
         ".jpeg",
         ".png",
     }
+
+    # Keep OCR images within a reasonable memory footprint.
+    OCR_RENDER_SCALE = 1.5
+    MAX_IMAGE_DIMENSION = 2500
 
     def __init__(self):
         self._configure_tesseract()
@@ -38,7 +45,7 @@ class OCRService:
         Configure the Tesseract executable.
 
         Priority:
-            1. TESSERACT_CMD from .env
+            1. TESSERACT_CMD from environment
             2. Standard Windows installation path
             3. Tesseract available through system PATH
         """
@@ -107,6 +114,8 @@ class OCRService:
 
         If a page does not contain meaningful native text,
         render that page as an image and use Tesseract OCR.
+
+        Only one OCR image is kept in memory at a time.
         """
 
         pages = []
@@ -136,31 +145,45 @@ class OCRService:
                     continue
 
                 # ---------------------------------------------
-                # Scanned/image PDF page → OCR
+                # Scanned PDF page -> OCR
                 # ---------------------------------------------
 
                 pixmap = page.get_pixmap(
-                    matrix=pymupdf.Matrix(2, 2),
+                    matrix=pymupdf.Matrix(
+                        self.OCR_RENDER_SCALE,
+                        self.OCR_RENDER_SCALE,
+                    ),
                     alpha=False,
                 )
 
-                image = Image.frombytes(
-                    "RGB",
-                    [pixmap.width, pixmap.height],
-                    pixmap.samples,
-                )
+                try:
+                    image = Image.frombytes(
+                        "RGB",
+                        [pixmap.width, pixmap.height],
+                        pixmap.samples,
+                    )
 
-                ocr_text = self._run_tesseract(image)
+                    image = self._prepare_image_for_ocr(image)
 
-                pages.append(
-                    {
-                        "page_number": page_index + 1,
-                        "text": ocr_text,
-                        "ocr_used": True,
-                    }
-                )
+                    ocr_text = self._run_tesseract(image)
 
-                document_ocr_used = True
+                    pages.append(
+                        {
+                            "page_number": page_index + 1,
+                            "text": ocr_text,
+                            "ocr_used": True,
+                        }
+                    )
+
+                    document_ocr_used = True
+
+                    # Explicitly release the image before processing
+                    # the next page.
+                    image.close()
+                    del image
+
+                finally:
+                    del pixmap
 
         finally:
             pdf.close()
@@ -180,11 +203,20 @@ class OCRService:
     def _extract_from_image(self, path: Path):
         """
         Extract text from JPG/JPEG/PNG using Tesseract OCR.
+
+        Large uploaded images are resized before OCR to avoid
+        excessive memory consumption while retaining enough
+        resolution for document text.
         """
 
         with Image.open(path) as image:
             image = image.convert("RGB")
+
+            image = self._prepare_image_for_ocr(image)
+
             text = self._run_tesseract(image)
+
+            image.close()
 
         pages = [
             {
@@ -199,6 +231,43 @@ class OCRService:
             "pages": pages,
             "ocr_used": True,
         }
+
+    # ---------------------------------------------------------
+    # OCR image preparation
+    # ---------------------------------------------------------
+
+    @classmethod
+    def _prepare_image_for_ocr(cls, image: Image.Image):
+        """
+        Reduce very large OCR images to a bounded maximum
+        dimension.
+
+        This prevents large uploaded images and rendered PDF
+        pages from consuming excessive memory.
+        """
+
+        width, height = image.size
+
+        largest_dimension = max(width, height)
+
+        if largest_dimension <= cls.MAX_IMAGE_DIMENSION:
+            return image
+
+        scale = cls.MAX_IMAGE_DIMENSION / largest_dimension
+
+        new_size = (
+            max(1, int(width * scale)),
+            max(1, int(height * scale)),
+        )
+
+        resized_image = image.resize(
+            new_size,
+            Image.Resampling.LANCZOS,
+        )
+
+        image.close()
+
+        return resized_image
 
     # ---------------------------------------------------------
     # Tesseract
