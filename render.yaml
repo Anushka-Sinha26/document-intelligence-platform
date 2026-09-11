@@ -6,9 +6,8 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/v1/health
 
-    envVars:
-      - key: GEMINI_API_KEY
-        sync: false
+        envVars:
+      - fromGroup: document-intelligence-secrets
       - key: GEMINI_MODEL
         value: gemini-3.5-flash
       - key: SECRET_KEY
