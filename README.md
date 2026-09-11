@@ -552,48 +552,27 @@ Opening Cash + Net Increase in Cash
 
 
 
-\### Validation result
-
-
+### Validation result
 
 Each validation check contains:
 
-
-
 ```json
-
 {
-
-&#x20; "formula": "...",
-
-&#x20; "input\_values": {},
-
-&#x20; "calculated\_value": "...",
-
-&#x20; "reported\_value": "...",
-
-&#x20; "variance": "...",
-
-&#x20; "status": "PASS"
-
+  "formula": "...",
+  "input_values": {},
+  "calculated_value": "...",
+  "reported_value": "...",
+  "variance": "...",
+  "status": "PASS"
 }
-
 ```
-
-
 
 Possible validation statuses are:
 
-
-
 ```text
-
 PASS
-
 FAIL
-
-NOT\_APPLICABLE
-
+NOT_APPLICABLE
 ```
 
 
